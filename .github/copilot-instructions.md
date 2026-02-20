@@ -1,0 +1,5 @@
+---
+description: Describe when these instructions should be loaded
+# applyTo: 'Describe when these instructions should be loaded' # when provided, instructions will automatically be added to the request context when the pattern matches an attached file
+---
+このプロジェクトでは、レベルアップシステムを備えた習慣化アプリを開発する。requirements.mdはその要件定義書である。開発ではここに記載されてる内容を概ね参考に進めていくのでアドバイスして欲しい。あくまでおおまかな計画なので途中で変更等があるかもしれないがその場合はチャットを通じて適宜対すること。また、チャットでコンソール（ターミナル）上の操作に関する質問に回答する場合は、指示がない限り自動でコマンド実行しないこと。理由はコマンド実行を一任すると例えばソフトウェアやツールのインストールを行うのに必要なソフト側からの質問に正確に対応できなくなる可能性があり、結果ととして意図しないバックエンド構成になってしまう恐れがあるからである。したがって、基本的にコマンド実行は私自身がコンソール上に打ち込んで進めていくので、その際に不明な点が出てきたら都度アドバイスしてほしい。その他、アプリ開発にあたっての質問や指示はチャット内で行うのでその内容に応じること。

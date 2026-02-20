@@ -1,0 +1,2449 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mission Leveler - 統合プロトタイプ v6</title>
+    <!-- Lottie Web Component -->
+    <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.8.11/dist/dotlottie-wc.js" type="module"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', 'Hiragino Kaku Gothic ProN', sans-serif;
+            background: #1A202C;
+            color: #2D3748;
+            overflow-x: hidden;
+            min-height: 100vh;
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* デバイスフレーム */
+        .device-frame {
+            width: 375px;
+            height: 812px;
+            background: #FFFFFF;
+            border-radius: 40px;
+            overflow: hidden;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        .device-notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 30px;
+            background: #1A202C;
+            border-radius: 0 0 20px 20px;
+            z-index: 100;
+        }
+
+        .device-screen {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 画面コンテナ */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .screen.hidden-right {
+            transform: translateX(100%);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .screen.hidden-left {
+            transform: translateX(-100%);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* ========== 下部ナビゲーションバー ========== */
+        .bottom-nav {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: #FFFFFF;
+            border-top: 1px solid #E2E8F0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0 24px 16px;
+            z-index: 50;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: none;
+            border: none;
+        }
+
+        .nav-item:hover {
+            background: #F7FAFC;
+        }
+
+        .nav-item.active {
+            background: rgba(248, 113, 113, 0.1);
+        }
+
+        .nav-icon {
+            width: 24px;
+            height: 24px;
+            fill: #A0AEC0;
+            transition: fill 0.3s ease;
+        }
+
+        .nav-item.active .nav-icon {
+            fill: #F87171;
+        }
+
+        .nav-item:hover .nav-icon {
+            fill: #718096;
+        }
+
+        .nav-item.active:hover .nav-icon {
+            fill: #F87171;
+        }
+
+        .nav-label {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            color: #A0AEC0;
+            transition: color 0.3s ease;
+        }
+
+        .nav-item.active .nav-label {
+            color: #F87171;
+        }
+
+        .nav-item:hover .nav-label {
+            color: #718096;
+        }
+
+        .nav-item.active:hover .nav-label {
+            color: #F87171;
+        }
+
+        /* ========== ホーム画面 ========== */
+        .screen-home {
+            background: #FFFFFF;
+        }
+
+        .screen-home .screen-content {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 80px;
+        }
+
+        /* ミッションセクション */
+        .mission-section {
+            padding: 48px 24px 24px;
+            background: #FFFFFF;
+        }
+
+        .mission-code {
+            text-align: center;
+            padding: 16px 24px;
+            background: #FFFFFF;
+            border: 2px solid #E2E8F0;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .mission-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            color: #A0AEC0;
+            margin-bottom: 4px;
+        }
+
+        .mission-name {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            color: #2D3748;
+        }
+
+        /* 円形プログレスエリア */
+        .progress-section {
+            padding: 0 24px 32px;
+            background: #FFFFFF;
+            display: flex;
+            justify-content: center;
+        }
+
+        .circular-progress {
+            position: relative;
+            width: 260px;
+            height: 260px;
+        }
+
+        .circle-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .circle-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+            filter: drop-shadow(0 2px 8px rgba(248, 113, 113, 0.15));
+        }
+
+        .circle-bg {
+            fill: none;
+            stroke: #F1F5F9;
+            stroke-width: 12;
+        }
+
+        .circle-progress {
+            fill: none;
+            stroke: url(#progressGradient);
+            stroke-width: 12;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .decoration-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            border: 1px solid #F1F5F9;
+            pointer-events: none;
+        }
+
+        .ring-outer {
+            width: 92%;
+            height: 92%;
+            opacity: 0.5;
+        }
+
+        .ring-inner {
+            width: 72%;
+            height: 72%;
+            opacity: 0.3;
+        }
+
+        .center-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 10;
+        }
+
+        .level-center {
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 3px;
+            color: #718096;
+            margin-bottom: 6px;
+        }
+
+        .progress-percentage {
+            font-size: 48px;
+            font-weight: 700;
+            line-height: 1;
+            color: #1A202C;
+            margin-bottom: 4px;
+        }
+
+        .progress-label {
+            font-size: 12px;
+            color: #A0AEC0;
+            letter-spacing: 0.5px;
+        }
+
+        .exp-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: linear-gradient(135deg, #FFFFFF 0%, #F7FAFC 100%);
+            padding: 8px 12px;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            border: 1px solid #E2E8F0;
+            z-index: 20;
+        }
+
+        .exp-current {
+            font-size: 13px;
+            font-weight: 600;
+            color: #F87171;
+        }
+
+        .exp-separator {
+            color: #CBD5E0;
+            margin: 0 2px;
+        }
+
+        .exp-max {
+            font-size: 13px;
+            color: #A0AEC0;
+        }
+
+        .exp-label {
+            font-size: 8px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: #A0AEC0;
+            margin-left: 3px;
+        }
+
+        @keyframes gentle-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .circle-container.pulse {
+            animation: gentle-pulse 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* タスクセクション */
+        .tasks-section {
+            flex: 1;
+            padding: 0 24px 24px;
+            background: #F7FAFC;
+        }
+
+        .section-header {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            color: #A0AEC0;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .header-icon {
+            font-size: 14px;
+        }
+
+        .task-card {
+            padding: 16px 18px;
+            margin-bottom: 10px;
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .task-card:hover {
+            border-color: #CBD5E0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transform: translateY(-1px);
+        }
+
+        .task-card.completed {
+            background: #F7FAFC;
+            border-color: #E2E8F0;
+        }
+
+        .task-card.completed:hover {
+            transform: none;
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .task-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .task-checkbox {
+            width: 22px;
+            height: 22px;
+            border: 2px solid #CBD5E0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            flex-shrink: 0;
+            font-size: 12px;
+        }
+
+        .task-card:not(.completed) .task-checkbox {
+            border-color: #CBD5E0;
+            background: #FFFFFF;
+        }
+
+        .task-card.completed .task-checkbox {
+            border-color: #F87171;
+            background: #F87171;
+            color: #FFFFFF;
+        }
+
+        .task-name {
+            font-size: 14px;
+            color: #2D3748;
+            font-weight: 500;
+        }
+
+        .task-card.completed .task-name {
+            color: #A0AEC0;
+        }
+
+        .task-exp {
+            font-size: 12px;
+            font-weight: 600;
+            color: #F87171;
+        }
+
+        .task-card.completed .task-exp {
+            color: #CBD5E0;
+        }
+
+        .task-progress {
+            width: 100%;
+            height: 3px;
+            background: #F1F5F9;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .task-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #F87171 0%, #FCA5A5 100%);
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 2px;
+        }
+
+        .task-card.completed .task-progress-fill {
+            background: #CBD5E0;
+        }
+
+        /* ========== レベルアップオーバーレイ - 改善版 ========== */
+        .level-up-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .level-up-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        /* Lottieコンフェッティ */
+        .lottie-confetti {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            height: 400px;
+            pointer-events: none;
+            z-index: 1003;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .level-up-overlay.show .lottie-confetti {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* レベルアップコンテンツ */
+        .level-up-content {
+            position: relative;
+            z-index: 1002;
+            text-align: center;
+            transform: scale(0.8);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.1s;
+        }
+
+        .level-up-overlay.show .level-up-content {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        /* Level Up! テキスト - 斜体・横一列 */
+        .level-up-text {
+            font-size: 28px;
+            font-weight: 700;
+            font-style: italic;
+            letter-spacing: 2px;
+            color: #FFD700;
+            text-shadow: 
+                0 0 20px rgba(255, 215, 0, 0.6),
+                0 0 40px rgba(255, 215, 0, 0.4),
+                0 4px 8px rgba(0, 0, 0, 0.3);
+            margin-bottom: 24px;
+            white-space: nowrap;
+        }
+
+        /* レベル番号コンテナ - 修正版（数字がはみ出さないようにクリップ） */
+        .level-up-number-container {
+            position: relative;
+            height: 90px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .level-number-wrapper {
+            position: relative;
+            width: 120px;
+            height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .level-number {
+            font-size: 72px;
+            font-weight: 800;
+            color: #FFFFFF;
+            line-height: 1;
+            letter-spacing: 2px;
+            text-shadow: 
+                0 0 30px rgba(255, 255, 255, 0.8),
+                0 0 60px rgba(248, 113, 113, 0.6),
+                0 6px 20px rgba(0, 0, 0, 0.4);
+            position: absolute;
+            transition: none;
+        }
+
+        .level-number.old {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .level-number.new {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+
+        /* 数字スロットアニメーション - 改善版（最後まで見える） */
+        @keyframes slideUpOut {
+            0% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-60px);
+                opacity: 0;
+            }
+        }
+
+        @keyframes slideUpIn {
+            0% {
+                transform: translateY(60px);
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .level-number.old.animate {
+            animation: slideUpOut 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .level-number.new.animate {
+            animation: slideUpIn 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        /* タップヒント */
+        .tap-hint {
+            position: absolute;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            letter-spacing: 1px;
+            opacity: 0;
+            transition: opacity 0.5s ease 1.5s;
+        }
+
+        .level-up-overlay.show .tap-hint {
+            opacity: 1;
+        }
+
+        /* ========== ミッション作成画面 ========== */
+        .screen-create .screen-content,
+        .screen-task-add .screen-content,
+        .screen-confirm .screen-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 80px;
+        }
+
+        .create-header {
+            padding: 48px 24px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #FFFFFF;
+            border-bottom: 1px solid #E2E8F0;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #718096;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+        }
+
+        .back-btn:hover {
+            background: #F7FAFC;
+            color: #2D3748;
+        }
+
+        .header-title {
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            color: #1A202C;
+        }
+
+        .header-spacer {
+            width: 36px;
+        }
+
+        .create-main-content {
+            flex: 1;
+            padding: 40px 24px;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%);
+        }
+
+        .section-label-create {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            color: #A0AEC0;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-label-create::before {
+            content: '';
+            width: 4px;
+            height: 4px;
+            background: #F87171;
+            border-radius: 50%;
+        }
+
+        .input-container {
+            margin-bottom: 32px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            background: #FFFFFF;
+            border: 2px solid #E2E8F0;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .input-wrapper:focus-within {
+            border-color: #F87171;
+            box-shadow: 0 0 0 4px rgba(248, 113, 113, 0.1);
+        }
+
+        .mission-input {
+            width: 100%;
+            padding: 20px;
+            font-size: 18px;
+            font-weight: 500;
+            letter-spacing: 1px;
+            color: #2D3748;
+            background: transparent;
+            border: none;
+            outline: none;
+            text-align: center;
+        }
+
+        .mission-input::placeholder {
+            color: #CBD5E0;
+            font-weight: 400;
+        }
+
+        .char-counter {
+            text-align: right;
+            margin-top: 8px;
+            font-size: 12px;
+            color: #A0AEC0;
+        }
+
+        .char-counter.warning {
+            color: #F87171;
+        }
+
+        .next-btn {
+            width: 100%;
+            padding: 18px;
+            margin-top: 16px;
+            background: linear-gradient(135deg, #F87171 0%, #FCA5A5 100%);
+            color: #FFFFFF;
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(248, 113, 113, 0.3);
+        }
+
+        .next-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(248, 113, 113, 0.4);
+        }
+
+        .next-btn:disabled {
+            background: #E2E8F0;
+            color: #A0AEC0;
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ========== タスク追加画面 ========== */
+        .task-add-main-content {
+            flex: 1;
+            padding: 32px 24px;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%);
+            min-height: 0;
+        }
+
+        .mission-display-box {
+            background: #FFFFFF;
+            border: 2px solid #E2E8F0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .mission-display-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            color: #A0AEC0;
+            margin-bottom: 8px;
+        }
+
+        .mission-display-name {
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            color: #1A202C;
+            text-align: center;
+        }
+
+        .task-input-area {
+            margin-bottom: 24px;
+        }
+
+        .task-input-wrapper {
+            position: relative;
+            background: #FFFFFF;
+            border: 2px solid #E2E8F0;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            gap: 8px;
+            padding: 12px;
+        }
+
+        .task-input-wrapper:focus-within {
+            border-color: #F87171;
+            box-shadow: 0 0 0 4px rgba(248, 113, 113, 0.1);
+        }
+
+        .task-input {
+            flex: 1;
+            padding: 8px 12px;
+            font-size: 15px;
+            font-weight: 500;
+            color: #2D3748;
+            background: transparent;
+            border: none;
+            outline: none;
+        }
+
+        .task-input::placeholder {
+            color: #CBD5E0;
+            font-weight: 400;
+        }
+
+        .add-task-btn {
+            padding: 8px 20px;
+            background: linear-gradient(135deg, #F87171 0%, #FCA5A5 100%);
+            color: #FFFFFF;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            white-space: nowrap;
+        }
+
+        .add-task-btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(248, 113, 113, 0.3);
+        }
+
+        .add-task-btn:disabled {
+            background: #E2E8F0;
+            color: #A0AEC0;
+            cursor: not-allowed;
+        }
+
+        .task-list-area {
+            flex: 1;
+            margin-bottom: 24px;
+            overflow-y: auto;
+            min-height: 0;
+        }
+
+        .task-list-container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* スクロールバーのスタイリング */
+        .task-list-area::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .task-list-area::-webkit-scrollbar-track {
+            background: #F7FAFC;
+            border-radius: 4px;
+        }
+
+        .task-list-area::-webkit-scrollbar-thumb {
+            background: #CBD5E0;
+            border-radius: 4px;
+        }
+
+        .task-list-area::-webkit-scrollbar-thumb:hover {
+            background: #A0AEC0;
+        }
+
+        .task-count-info {
+            font-size: 12px;
+            color: #A0AEC0;
+            margin-bottom: 12px;
+            text-align: right;
+        }
+
+        .task-count-info.warning {
+            color: #F87171;
+        }
+
+        .task-list-item {
+            background: #FFFFFF;
+            border: 2px solid #E2E8F0;
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .task-list-item:hover {
+            border-color: #CBD5E0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .task-list-item.selected {
+            border-color: #F87171;
+            background: rgba(248, 113, 113, 0.05);
+        }
+
+        .task-bullet {
+            width: 20px;
+            height: 20px;
+            background: #F87171;
+            border-radius: 50%;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 600;
+            color: #FFFFFF;
+        }
+
+        .task-list-item.selected .task-bullet {
+            background: #1A202C;
+        }
+
+        .task-list-name {
+            flex: 1;
+            font-size: 15px;
+            font-weight: 500;
+            color: #2D3748;
+        }
+
+        .task-list-item.selected .task-list-name {
+            font-weight: 600;
+        }
+
+        .task-edit-options {
+            background: #FFFFFF;
+            border: 2px solid #F87171;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            display: none;
+            z-index: 10;
+            position: relative;
+        }
+
+        .task-edit-options.show {
+            display: block;
+        }
+
+        .task-edit-title {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: #A0AEC0;
+            margin-bottom: 12px;
+        }
+
+        .task-edit-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .edit-option-btn {
+            flex: 1;
+            padding: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            border: 2px solid #E2E8F0;
+            border-radius: 8px;
+            background: #FFFFFF;
+            color: #718096;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .edit-option-btn:hover {
+            border-color: #CBD5E0;
+            background: #F7FAFC;
+            color: #2D3748;
+        }
+
+        .edit-option-btn.delete {
+            border-color: #FCA5A5;
+            color: #F87171;
+        }
+
+        .edit-option-btn.delete:hover {
+            background: rgba(248, 113, 113, 0.1);
+            border-color: #F87171;
+        }
+
+        .confirm-tasks-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #F87171 0%, #FCA5A5 100%);
+            color: #FFFFFF;
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(248, 113, 113, 0.3);
+        }
+
+        .confirm-tasks-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(248, 113, 113, 0.4);
+        }
+
+        .confirm-tasks-btn:disabled {
+            background: #E2E8F0;
+            color: #A0AEC0;
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ========== ミッション全体確認画面 ========== */
+        .confirm-main-content {
+            flex: 1;
+            padding: 40px 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%);
+            overflow-y: auto;
+        }
+
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 40px;
+        }
+
+        .step {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #E2E8F0;
+            transition: all 0.3s ease;
+        }
+
+        .step.active {
+            width: 24px;
+            border-radius: 4px;
+            background: linear-gradient(135deg, #F87171 0%, #FCA5A5 100%);
+        }
+
+        .step.completed {
+            background: #F87171;
+        }
+
+        .mission-card-confirm {
+            width: 100%;
+            padding: 28px 24px;
+            background: #FFFFFF;
+            border: 2px solid #E2E8F0;
+            border-radius: 16px;
+            margin-bottom: 24px;
+        }
+
+        .mission-icon {
+            width: 56px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+        }
+
+        .mission-icon svg {
+            width: 40px;
+            height: 40px;
+        }
+
+        .mission-icon svg path {
+            fill: #F87171;
+        }
+
+        .mission-label-confirm {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            color: #A0AEC0;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .mission-name-display {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: #1A202C;
+            padding: 12px 0;
+            border-top: 1px solid #F1F5F9;
+            border-bottom: 1px solid #F1F5F9;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .tasks-list-confirm {
+            margin-top: 16px;
+        }
+
+        .confirm-task-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid #F7FAFC;
+        }
+
+        .confirm-task-item:last-child {
+            border-bottom: none;
+        }
+
+        .confirm-task-bullet {
+            width: 18px;
+            height: 18px;
+            background: #F87171;
+            border-radius: 50%;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            font-weight: 600;
+            color: #FFFFFF;
+        }
+
+        .confirm-task-name {
+            font-size: 14px;
+            color: #2D3748;
+            font-weight: 500;
+        }
+
+        .confirm-message {
+            font-size: 14px;
+            color: #718096;
+            margin-top: 20px;
+            line-height: 1.8;
+            text-align: center;
+        }
+
+        .spacer {
+            flex: 1;
+        }
+
+        .button-area {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .confirm-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #F87171 0%, #FCA5A5 100%);
+            color: #FFFFFF;
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(248, 113, 113, 0.3);
+        }
+
+        .confirm-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(248, 113, 113, 0.4);
+        }
+
+        .edit-btn, .restart-btn {
+            width: 100%;
+            padding: 18px;
+            background: #FFFFFF;
+            color: #718096;
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            border: 2px solid #E2E8F0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .edit-btn:hover, .restart-btn:hover {
+            border-color: #CBD5E0;
+            background: #F7FAFC;
+            color: #2D3748;
+        }
+
+        .footer-text {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #A0AEC0;
+        }
+
+        /* 成功オーバーレイ */
+        .success-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.98);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+        }
+
+        .success-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .success-icon {
+            width: 72px;
+            height: 72px;
+            background: linear-gradient(135deg, #F87171 0%, #FCA5A5 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: #FFFFFF;
+            margin-bottom: 20px;
+            transform: scale(0);
+            transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .success-overlay.show .success-icon {
+            transform: scale(1);
+        }
+
+        .success-text {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            color: #2D3748;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease 0.3s;
+        }
+
+        .success-overlay.show .success-text {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .success-subtext {
+            font-size: 14px;
+            color: #718096;
+            margin-top: 8px;
+            opacity: 0;
+            transition: opacity 0.3s ease 0.5s;
+        }
+
+        .success-overlay.show .success-subtext {
+            opacity: 1;
+        }
+
+        /* ========== 設定画面 ========== */
+        .screen-settings .screen-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 80px;
+        }
+
+        .settings-main-content {
+            flex: 1;
+            padding: 24px;
+            background: #F7FAFC;
+        }
+
+        .settings-group {
+            margin-bottom: 24px;
+        }
+
+        .settings-group-title {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            color: #A0AEC0;
+            margin-bottom: 12px;
+            padding-left: 4px;
+        }
+
+        .settings-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 18px;
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .settings-item:hover {
+            border-color: #CBD5E0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .settings-item-label {
+            font-size: 15px;
+            color: #2D3748;
+            font-weight: 500;
+        }
+
+        .settings-item-arrow {
+            font-size: 16px;
+            color: #A0AEC0;
+        }
+
+        .version-info {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 12px;
+            color: #A0AEC0;
+        }
+
+        /* プロトタイプ説明 */
+        .prototype-info {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 12px 24px;
+            border-radius: 30px;
+            color: #FFFFFF;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+        }
+
+        /* 装飾 */
+        .decoration-circle {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            border: 1px solid #F1F5F9;
+            position: absolute;
+            top: -90px;
+            right: -90px;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* スライドインアニメーション */
+        @keyframes slide-in {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .task-card {
+            animation: slide-in 0.4s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+        }
+
+        .task-card:nth-child(2) { animation-delay: 0.05s; }
+        .task-card:nth-child(3) { animation-delay: 0.1s; }
+        .task-card:nth-child(4) { animation-delay: 0.15s; }
+
+        .task-list-item {
+            animation: slide-in 0.3s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+        }
+
+        .task-list-item:nth-child(1) { animation-delay: 0s; }
+        .task-list-item:nth-child(2) { animation-delay: 0.05s; }
+        .task-list-item:nth-child(3) { animation-delay: 0.1s; }
+        .task-list-item:nth-child(4) { animation-delay: 0.15s; }
+        .task-list-item:nth-child(5) { animation-delay: 0.2s; }
+    </style>
+</head>
+<body>
+    <!-- デバイスフレーム -->
+    <div class="device-frame">
+        <div class="device-notch"></div>
+        <div class="device-screen">
+            
+            <!-- ========== ホーム画面 ========== -->
+            <div class="screen screen-home" id="screenHome">
+                <div class="screen-content">
+                    <!-- ミッションセクション -->
+                    <div class="mission-section">
+                        <div class="mission-code">
+                            <div class="mission-label">MISSION</div>
+                            <div class="mission-name">MORNING SURGE</div>
+                        </div>
+                    </div>
+
+                    <!-- 円形プログレスエリア -->
+                    <div class="progress-section">
+                        <div class="circular-progress">
+                            <div class="circle-container" id="circleContainer">
+                                <svg class="circle-svg" viewBox="0 0 260 260">
+                                    <defs>
+                                        <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#F87171;stop-opacity:1" />
+                                            <stop offset="100%" style="stop-color:#FCA5A5;stop-opacity:1" />
+                                        </linearGradient>
+                                    </defs>
+                                    <circle class="circle-bg" cx="130" cy="130" r="118" />
+                                    <circle class="circle-progress" id="circleProgressBar" cx="130" cy="130" r="118" 
+                                            stroke-dasharray="741" stroke-dashoffset="741" />
+                                </svg>
+                                
+                                <div class="decoration-ring ring-outer"></div>
+                                <div class="decoration-ring ring-inner"></div>
+                                
+                                <div class="center-content">
+                                    <div class="level-center">LEVEL <span id="levelCenter">9</span></div>
+                                    <div class="progress-percentage" id="progressPercentage">0%</div>
+                                    <div class="progress-label">達成</div>
+                                </div>
+                                
+                                <div class="exp-badge">
+                                    <span class="exp-current" id="expCurrent">0</span>
+                                    <span class="exp-separator">/</span>
+                                    <span class="exp-max" id="expMax">180</span>
+                                    <span class="exp-label">EXP</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- タスクセクション -->
+                    <div class="tasks-section">
+                        <div class="section-header">
+                            <span class="header-icon">□</span>
+                            TASKS
+                        </div>
+                        
+                        <div class="task-card" data-exp="50" onclick="toggleTask(this)">
+                            <div class="task-header">
+                                <div class="task-title">
+                                    <div class="task-checkbox">○</div>
+                                    <span class="task-name">朝の運動</span>
+                                </div>
+                                <div class="task-exp">+50 EXP</div>
+                            </div>
+                            <div class="task-progress">
+                                <div class="task-progress-fill" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div class="task-card" data-exp="50" onclick="toggleTask(this)">
+                            <div class="task-header">
+                                <div class="task-title">
+                                    <div class="task-checkbox">○</div>
+                                    <span class="task-name">読書30分</span>
+                                </div>
+                                <div class="task-exp">+50 EXP</div>
+                            </div>
+                            <div class="task-progress">
+                                <div class="task-progress-fill" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div class="task-card" data-exp="80" onclick="toggleTask(this)">
+                            <div class="task-header">
+                                <div class="task-title">
+                                    <div class="task-checkbox">○</div>
+                                    <span class="task-name">コード学習</span>
+                                </div>
+                                <div class="task-exp">+80 EXP</div>
+                            </div>
+                            <div class="task-progress">
+                                <div class="task-progress-fill" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- レベルアップオーバーレイ（ブラー背景 + 全要素） -->
+                <div class="level-up-overlay" id="levelUpOverlay" onclick="closeLevelUp()">
+                    <!-- Lottie コンフェッティアニメーション（10の倍数時のみ表示） -->
+                    <dotlottie-wc 
+                        class="lottie-confetti" 
+                        id="lottieConfetti"
+                        src="https://lottie.host/07a63b86-c59a-4053-a898-97b0fc4fbf75/LHM11gdD8z.lottie"
+                        autoplay
+                        loop>
+                    </dotlottie-wc>
+                    
+                    <!-- レベルアップコンテンツ -->
+                    <div class="level-up-content">
+                        <div class="level-up-text">Level Up!</div>
+                        <div class="level-up-number-container">
+                            <div class="level-number-wrapper">
+                                <div class="level-number old" id="levelOld">9</div>
+                                <div class="level-number new" id="levelNew">10</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- タップヒント -->
+                    <div class="tap-hint">Tap to continue</div>
+                </div>
+
+                <!-- 下部ナビゲーション -->
+                <nav class="bottom-nav">
+                    <button class="nav-item active" onclick="navigateTo('home')">
+                        <svg class="nav-icon" viewBox="0 0 256 256">
+                            <path d="M68.8,73L10,130.3l14.6,0.2l14.5,0.1v54.9v54.9h31.3h31.3v-36.6v-36.6h26.1H154v36.6v36.6h31.3h31.3v-54.9v-54.9h14.6H246l-19.9-19.4l-19.9-19.3V69.4V47h-15.7h-15.7v7.2v7.2l-23.4-22.9c-12.9-12.6-23.5-22.9-23.6-22.9C127.7,15.7,101.1,41.5,68.8,73z"/>
+                        </svg>
+                        <span class="nav-label">HOME</span>
+                    </button>
+                    <button class="nav-item" onclick="navigateTo('create')">
+                        <svg class="nav-icon" viewBox="0 0 256 256">
+                            <path d="M128,216.5c-49.2,0-88.5-39.3-88.5-88.5c0-49.2,39.3-88.5,88.5-88.5c49.2,0,88.5,39.3,88.5,88.5C216.5,177.2,177.2,216.5,128,216.5z M128,59.2c-38.4,0-68.8,30.5-68.8,68.8c0,38.3,30.5,68.8,68.8,68.8c38.4,0,68.8-30.5,68.8-68.8C196.8,89.7,166.4,59.2,128,59.2z M128,167.3c-21.6,0-39.3-17.7-39.3-39.3c0-21.6,17.7-39.3,39.3-39.3c21.6,0,39.3,17.7,39.3,39.3C167.3,149.6,149.6,167.3,128,167.3z M128,108.3c-10.8,0-19.7,8.8-19.7,19.7c0,10.8,8.8,19.7,19.7,19.7c10.8,0,19.7-8.8,19.7-19.7C147.7,117.2,138.8,108.3,128,108.3z"/>
+                            <path d="M128,246c-5.9,0-9.8-3.9-9.8-9.8v-78.7c0-5.9,3.9-9.8,9.8-9.8c5.9,0,9.8,3.9,9.8,9.8v78.7C137.8,242.1,133.9,246,128,246z"/>
+                            <path d="M128,108.3c-5.9,0-9.8-3.9-9.8-9.8V19.8c0-5.9,3.9-9.8,9.8-9.8c5.9,0,9.8,3.9,9.8,9.8v78.7C137.8,104.4,133.9,108.3,128,108.3z"/>
+                            <path d="M98.5,137.8H19.8c-5.9,0-9.8-3.9-9.8-9.8c0-5.9,3.9-9.8,9.8-9.8h78.7c5.9,0,9.8,3.9,9.8,9.8C108.3,133.9,104.4,137.8,98.5,137.8z"/>
+                            <path d="M236.2,137.8h-78.7c-5.9,0-9.8-3.9-9.8-9.8c0-5.9,3.9-9.8,9.8-9.8h78.7c5.9,0,9.8,3.9,9.8,9.8C246,133.9,242.1,137.8,236.2,137.8z"/>
+                        </svg>
+                        <span class="nav-label">MISSION</span>
+                    </button>
+                    <button class="nav-item" onclick="navigateTo('settings')">
+                        <svg class="nav-icon" viewBox="0 0 256 256">
+                            <path d="M234.2,108.3h-8.1c-6.5,0-13.2-4.3-14.9-9.5c-1.7-5.2-4.6-21.6,0-26.2l5.8-5.8c4.6-4.6,4.6-12.1,0-16.7L205.9,39c-4.6-4.6-12.1-4.6-16.7,0l-5.8,5.8c-4.6,4.6-12.3,6.3-17.1,3.8c-4.8-2.5-18.6-12.1-18.6-18.6v-8.2c0-6.5-5.3-11.8-11.8-11.8h-15.7c-6.5,0-11.8,5.3-11.8,11.8v8.2c0,6.5-4.3,13.2-9.6,14.9c-5.2,1.7-21.6,4.6-26.2,0L66.8,39c-4.6-4.6-12.1-4.6-16.7,0L39,50.1c-4.6,4.6-4.6,12.1,0,16.7l5.8,5.8c4.6,4.6,6.3,12.3,3.8,17.1c-2.5,4.8-12.1,18.6-18.6,18.6h-8.1c-6.5,0-11.8,5.3-11.8,11.8v15.8c0,6.5,5.3,11.8,11.8,11.8H30c6.5,0,13.2,4.3,14.9,9.5c1.7,5.3,4.6,21.6,0,26.2l-5.8,5.8c-4.6,4.6-4.6,12.1,0,16.7L50.1,217c4.6,4.6,12.1,4.6,16.7,0l5.8-5.8c4.6-4.6,12.3-6.3,17.1-3.8c4.8,2.5,18.6,12.1,18.6,18.6v8.2c0,6.5,5.3,11.8,11.8,11.8h15.7c6.5,0,11.8-5.3,11.8-11.8v-8.1c0-6.5,4.3-13.2,9.6-14.9c5.3-1.7,21.6-4.6,26.2,0l5.8,5.8c4.6,4.6,12.1,4.6,16.7,0l11.1-11.1c4.6-4.6,4.6-12.1,0-16.7l-5.8-5.8c-4.6-4.6-6.3-12.3-3.8-17.1c2.5-4.8,12.1-18.6,18.6-18.6h8.1c6.5,0,11.8-5.3,11.8-11.8v-15.7C246,113.6,240.7,108.3,234.2,108.3L234.2,108.3z M128,177.2c-27.2,0-49.2-22-49.2-49.2c0-27.2,22-49.2,49.2-49.2s49.2,22,49.2,49.2S155.2,177.2,128,177.2z"/>
+                        </svg>
+                        <span class="nav-label">SETTINGS</span>
+                    </button>
+                </nav>
+            </div>
+
+            <!-- ========== ミッション名作成画面 ========== -->
+            <div class="screen screen-create hidden-right" id="screenCreate">
+                <div class="decoration-circle"></div>
+                <div class="screen-content">
+                    <div class="create-header">
+                        <button class="back-btn" onclick="navigateTo('home')">←</button>
+                        <div class="header-title">NEW MISSION</div>
+                        <div class="header-spacer"></div>
+                    </div>
+                    <div class="create-main-content">
+                        <div class="section-label-create">MISSION NAME</div>
+                        <div class="input-container">
+                            <div class="input-wrapper">
+                                <input 
+                                    type="text" 
+                                    class="mission-input" 
+                                    id="missionInput"
+                                    placeholder="ミッション名を入力"
+                                    maxlength="20"
+                                    oninput="updateCharCount()"
+                                >
+                            </div>
+                            <div class="char-counter" id="charCounter">0 / 20</div>
+                            <button class="next-btn" id="nextBtn" disabled onclick="goToTaskAdd()">
+                                NEXT →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 下部ナビゲーション -->
+                <nav class="bottom-nav">
+                    <button class="nav-item" onclick="navigateTo('home')">
+                        <svg class="nav-icon" viewBox="0 0 256 256">
+                            <path d="M68.8,73L10,130.3l14.6,0.2l14.5,0.1v54.9v54.9h31.3h31.3v-36.6v-36.6h26.1H154v36.6v36.6h31.3h31.3v-54.9v-54.9h14.6H246l-19.9-19.4l-19.9-19.3V69.4V47h-15.7h-15.7v7.2v7.2l-23.4-22.9c-12.9-12.6-23.5-22.9-23.6-22.9C127.7,15.7,101.1,41.5,68.8,73z"/>
+                        </svg>
+                        <span class="nav-label">HOME</span>
+                    </button>
+                    <button class="nav-item active" onclick="navigateTo('create')">
+                        <svg class="nav-icon" viewBox="0 0 256 256">
+                            <path d="M128,216.5c-49.2,0-88.5-39.3-88.5-88.5c0-49.2,39.3-88.5,88.5-88.5c49.2,0,88.5,39.3,88.5,88.5C216.5,177.2,177.2,216.5,128,216.5z M128,59.2c-38.4,0-68.8,30.5-68.8,68.8c0,38.3,30.5,68.8,68.8,68.8c38.4,0,68.8-30.5,68.8-68.8C196.8,89.7,166.4,59.2,128,59.2z M128,167.3c-21.6,0-39.3-17.7-39.3-39.3c0-21.6,17.7-39.3,39.3-39.3c21.6,0,39.3,17.7,39.3,39.3C167.3,149.6,149.6,167.3,128,167.3z M128,108.3c-10.8,0-19.7,8.8-19.7,19.7c0,10.8,8.8,19.7,19.7,19.7c10.8,0,19.7-8.8,19.7-19.7C147.7,117.2,138.8,108.3,128,108.3z"/>
+                            <path d="M128,246c-5.9,0-9.8-3.9-9.8-9.8v-78.7c0-5.9,3.9-9.8,9.8-9.8c5.9,0,9.8,3.9,9.8,9.8v78.7C137.8,242.1,133.9,246,128,246z"/>
+                            <path d="M128,108.3c-5.9,0-9.8-3.9-9.8-9.8V19.8c0-5.9,3.9-9.8,9.8-9.8c5.9,0,9.8,3.9,9.8,9.8v78.7C137.8,104.4,133.9,108.3,128,108.3z"/>
+                            <path d="M98.5,137.8H19.8c-5.9,0-9.8-3.9-9.8-9.8c0-5.9,3.9-9.8,9.8-9.8h78.7c5.9,0,9.8,3.9,9.8,9.8C108.3,133.9,104.4,137.8,98.5,137.8z"/>
+                            <path d="M236.2,137.8h-78.7c-5.9,0-9.8-3.9-9.8-9.8c0-5.9,3.9-9.8,9.8-9.8h78.7c5.9,0,9.8,3.9,9.8,9.8C246,133.9,242.1,137.8,236.2,137.8z"/>
+                        </svg>
+                        <span class="nav-label">MISSION</span>
+                    </button>
+                    <button class="nav-item" onclick="navigateTo('settings')">
+                        <svg class="nav-icon" viewBox="0 0 256 256">
+                            <path d="M234.2,108.3h-8.1c-6.5,0-13.2-4.3-14.9-9.5c-1.7-5.2-4.6-21.6,0-26.2l5.8-5.8c4.6-4.6,4.6-12.1,0-16.7L205.9,39c-4.6-4.6-12.1-4.6-16.7,0l-5.8,5.8c-4.6,4.6-12.3,6.3-17.1,3.8c-4.8-2.5-18.6-12.1-18.6-18.6v-8.2c0-6.5-5.3-11.8-11.8-11.8h-15.7c-6.5,0-11.8,5.3-11.8,11.8v8.2c0,6.5-4.3,13.2-9.6,14.9c-5.2,1.7-21.6,4.6-26.2,0L66.8,39c-4.6-4.6-12.1-4.6-16.7,0L39,50.1c-4.6,4.6-4.6,12.1,0,16.7l5.8,5.8c4.6,4.6,6.3,12.3,3.8,17.1c-2.5,4.8-12.1,18.6-18.6,18.6h-8.1c-6.5,0-11.8,5.3-11.8,11.8v15.8c0,6.5,5.3,11.8,11.8,11.8H30c6.5,0,13.2,4.3,14.9,9.5c1.7,5.3,4.6,21.6,0,26.2l-5.8,5.8c-4.6,4.6-4.6,12.1,0,16.7L50.1,217c4.6,4.6,12.1,4.6,16.7,0l5.8-5.8c4.6-4.6,12.3-6.3,17.1-3.8c4.8,2.5,18.6,12.1,18.6,18.6v8.2c0,6.5,5.3,11.8,11.8,11.8h15.7c6.5,0,11.8-5.3,11.8-11.8v-8.1c0-6.5,4.3-13.2,9.6-14.9c5.3-1.7,21.6-4.6,26.2,0l5.8,5.8c4.6,4.6,12.1,4.6,16.7,0l11.1-11.1c4.6-4.6,4.6-12.1,0-16.7l-5.8-5.8c-4.6-4.6-6.3-12.3-3.8-17.1c2.5-4.8,12.1-18.6,18.6-18.6h8.1c6.5,0,11.8-5.3,11.8-11.8v-15.7C246,113.6,240.7,108.3,234.2,108.3L234.2,108.3z M128,177.2c-27.2,0-49.2-22-49.2-49.2c0-27.2,22-49.2,49.2-49.2s49.2,22,49.2,49.2S155.2,177.2,128,177.2z"/>
+                        </svg>
+                        <span class="nav-label">SETTINGS</span>
+                    </button>
+                </nav>
+            </div>
+
+            <!-- ========== タスク追加画面 ========== -->
+            <div class="screen screen-task-add hidden-right" id="screenTaskAdd">
+                <div class="decoration-circle"></div>
+                <div class="screen-content">
+                    <div class="create-header">
+                        <button class="back-btn" onclick="goBackToCreate()">←</button>
+                        <div class="header-title">ADD TASKS</div>
+                        <div class="header-spacer"></div>
+                    </div>
+                    <div class="task-add-main-content">
+                        <!-- ミッション表示 -->
+                        <div class="mission-display-box">
+                            <div class="mission-display-label">MISSION</div>
+                            <div class="mission-display-name" id="missionDisplayName">ストリクス</div>
+                        </div>
+
+                        <!-- タスク入力エリア -->
+                        <div class="task-input-area">
+                            <div class="section-label-create">TASK NAME</div>
+                            <div class="task-input-wrapper">
+                                <input 
+                                    type="text" 
+                                    class="task-input" 
+                                    id="taskInput"
+                                    placeholder="タスク名を入力"
+                                    maxlength="30"
+                                    onkeypress="handleTaskInputEnter(event)"
+                                >
+                                <button class="add-task-btn" id="addTaskBtn" disabled onclick="addTask()">
+                                    追加
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- タスク編集オプション -->
+                        <div class="task-edit-options" id="taskEditOptions">
+                            <div class="task-edit-title">選択したタスク</div>
+                            <div class="task-edit-buttons">
+                                <button class="edit-option-btn">名前変更</button>
+                                <button class="edit-option-btn delete">削除</button>
+                            </div>
+                        </div>
+
+                        <!-- タスクリスト -->
+                        <div class="task-list-area">
+                            <div class="section-label-create">TASKS</div>
+                            <div class="task-count-info" id="taskCountInfo">0 / 10 タスク</div>
+                            <div id="taskListContainer">
+                                <!-- タスクアイテムが動的に追加される -->
+                            </div>
+                        </div>
+
+                        <!-- 確定ボタン -->
+                        <button class="confirm-tasks-btn" id="confirmTasksBtn" disabled onclick="goToFinalConfirm()">
+                            確定 →
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 下部ナビゲーション -->
+                <nav class="bottom-nav">
+                    <button class="nav-item" onclick="navigateTo('home')">
+                        <svg class="nav-icon" viewBox="0 0 256 256">
+                            <path d="M68.8,73L10,130.3l14.6,0.2l14.5,0.1v54.9v54.9h31.3h31.3v-36.6v-36.6h26.1H154v36.6v36.6h31.3h31.3v-54.9v-54.9h14.6H246l-19.9-19.4l-19.9-19.3V69.4V47h-15.7h-15.7v7.2v7.2l-23.4-22.9c-12.9-12.6-23.5-22.9-23.6-22.9C127.7,15.7,101.1,41.5,68.8,73z"/>
+                        </svg>
+                        <span class="nav-label">HOME</span>
+                    </button>
+                    <button class="nav-item active" onclick="navigateTo('create')">
+                        <svg class="nav-icon" viewBox="0 0 256 256">
+                            <path d="M128,216.5c-49.2,0-88.5-39.3-88.5-88.5c0-49.2,39.3-88.5,88.5-88.5c49.2,0,88.5,39.3,88.5,88.5C216.5,177.2,177.2,216.5,128,216.5z M128,59.2c-38.4,0-68.8,30.5-68.8,68.8c0,38.3,30.5,68.8,68.8,68.8c38.4,0,68.8-30.5,68.8-68.8C196.8,89.7,166.4,59.2,128,59.2z M128,167.3c-21.6,0-39.3-17.7-39.3-39.3c0-21.6,17.7-39.3,39.3-39.3c21.6,0,39.3,17.7,39.3,39.3C167.3,149.6,149.6,167.3,128,167.3z M128,108.3c-10.8,0-19.7,8.8-19.7,19.7c0,10.8,8.8,19.7,19.7,19.7c10.8,0,19.7-8.8,19.7-19.7C147.7,117.2,138.8,108.3,128,108.3z"/>
+                            <path d="M128,246c-5.9,0-9.8-3.9-9.8-9.8v-78.7c0-5.9,3.9-9.8,9.8-9.8c5.9,0,9.8,3.9,9.8,9.8v78.7C137.8,242.1,133.9,246,128,246z"/>
+                            <path d="M128,108.3c-5.9,0-9.8-3.9-9.8-9.8V19.8c0-5.9,3.9-9.8,9.8-9.8c5.9,0,9.8,3.9,9.8,9.8v78.7C137.8,104.4,133.9,108.3,128,108.3z"/>
+                            <path d="M98.5,137.8H19.8c-5.9,0-9.8-3.9-9.8-9.8c0-5.9,3.9-9.8,9.8-9.8h78.7c5.9,0,9.8,3.9,9.8,9.8C108.3,133.9,104.4,137.8,98.5,137.8z"/>
+                            <path d="M236.2,137.8h-78.7c-5.9,0-9.8-3.9-9.8-9.8c0-5.9,3.9-9.8,9.8-9.8h78.7c5.9,0,9.8,3.9,9.8,9.8C246,133.9,242.1,137.8,236.2,137.8z"/>
+                        </svg>
+                        <span class="nav-label">MISSION</span>
+                    </button>
+                    <button class="nav-item" onclick="navigateTo('settings')">
+                        <svg class="nav-icon" viewBox="0 0 256 256">
+                            <path d="M234.2,108.3h-8.1c-6.5,0-13.2-4.3-14.9-9.5c-1.7-5.2-4.6-21.6,0-26.2l5.8-5.8c4.6-4.6,4.6-12.1,0-16.7L205.9,39c-4.6-4.6-12.1-4.6-16.7,0l-5.8,5.8c-4.6,4.6-12.3,6.3-17.1,3.8c-4.8-2.5-18.6-12.1-18.6-18.6v-8.2c0-6.5-5.3-11.8-11.8-11.8h-15.7c-6.5,0-11.8,5.3-11.8,11.8v8.2c0,6.5-4.3,13.2-9.6,14.9c-5.2,1.7-21.6,4.6-26.2,0L66.8,39c-4.6-4.6-12.1-4.6-16.7,0L39,50.1c-4.6,4.6-4.6,12.1,0,16.7l5.8,5.8c4.6,4.6,6.3,12.3,3.8,17.1c-2.5,4.8-12.1,18.6-18.6,18.6h-8.1c-6.5,0-11.8,5.3-11.8,11.8v15.8c0,6.5,5.3,11.8,11.8,11.8H30c6.5,0,13.2,4.3,14.9,9.5c1.7,5.3,4.6,21.6,0,26.2l-5.8,5.8c-4.6,4.6-4.6,12.1,0,16.7L50.1,217c4.6,4.6,12.1,4.6,16.7,0l5.8-5.8c4.6-4.6,12.3-6.3,17.1-3.8c4.8,2.5,18.6,12.1,18.6,18.6v8.2c0,6.5,5.3,11.8,11.8,11.8h15.7c6.5,0,11.8-5.3,11.8-11.8v-8.1c0-6.5,4.3-13.2,9.6-14.9c5.3-1.7,21.6-4.6,26.2,0l5.8,5.8c4.6,4.6,12.1,4.6,16.7,0l11.1-11.1c4.6-4.6,4.6-12.1,0-16.7l-5.8-5.8c-4.6-4.6-6.3-12.3-3.8-17.1c2.5-4.8,12.1-18.6,18.6-18.6h8.1c6.5,0,11.8-5.3,11.8-11.8v-15.7C246,113.6,240.7,108.3,234.2,108.3L234.2,108.3z M128,177.2c-27.2,0-49.2-22-49.2-49.2c0-27.2,22-49.2,49.2-49.2s49.2,22,49.2,49.2S155.2,177.2,128,177.2z"/>
+                        </svg>
+                        <span class="nav-label">SETTINGS</span>
+                    </button>
+                </nav>
+            </div>
+
+            <!-- ========== ミッション全体確認画面 ========== -->
+            <div class="screen screen-confirm hidden-right" id="screenConfirm">
+                <div class="decoration-circle"></div>
+                <div class="screen-content">
+                    <div class="create-header">
+                        <button class="back-btn" onclick="goBackToTaskAdd()">←</button>
+                        <div class="header-title">CONFIRM</div>
+                        <div class="header-spacer"></div>
+                    </div>
+                    <div class="confirm-main-content">
+                        <div class="step-indicator">
+                            <div class="step completed"></div>
+                            <div class="step completed"></div>
+                            <div class="step active"></div>
+                        </div>
+                        <div class="mission-card-confirm">
+                            <div class="mission-icon">
+                                <svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M128,216.5c-49.2,0-88.5-39.3-88.5-88.5c0-49.2,39.3-88.5,88.5-88.5c49.2,0,88.5,39.3,88.5,88.5C216.5,177.2,177.2,216.5,128,216.5z M128,59.2c-38.4,0-68.8,30.5-68.8,68.8c0,38.3,30.5,68.8,68.8,68.8c38.4,0,68.8-30.5,68.8-68.8C196.8,89.7,166.4,59.2,128,59.2z M128,167.3c-21.6,0-39.3-17.7-39.3-39.3c0-21.6,17.7-39.3,39.3-39.3c21.6,0,39.3,17.7,39.3,39.3C167.3,149.6,149.6,167.3,128,167.3z M128,108.3c-10.8,0-19.7,8.8-19.7,19.7c0,10.8,8.8,19.7,19.7,19.7c10.8,0,19.7-8.8,19.7-19.7C147.7,117.2,138.8,108.3,128,108.3z"/>
+                                    <path d="M128,246c-5.9,0-9.8-3.9-9.8-9.8v-78.7c0-5.9,3.9-9.8,9.8-9.8c5.9,0,9.8,3.9,9.8,9.8v78.7C137.8,242.1,133.9,246,128,246z"/>
+                                    <path d="M128,108.3c-5.9,0-9.8-3.9-9.8-9.8V19.8c0-5.9,3.9-9.8,9.8-9.8c5.9,0,9.8,3.9,9.8,9.8v78.7C137.8,104.4,133.9,108.3,128,108.3z"/>
+                                    <path d="M98.5,137.8H19.8c-5.9,0-9.8-3.9-9.8-9.8c0-5.9,3.9-9.8,9.8-9.8h78.7c5.9,0,9.8,3.9,9.8,9.8C108.3,133.9,104.4,137.8,98.5,137.8z"/>
+                                    <path d="M236.2,137.8h-78.7c-5.9,0-9.8-3.9-9.8-9.8c0-5.9,3.9-9.8,9.8-9.8h78.7c5.9,0,9.8,3.9,9.8,9.8C246,133.9,242.1,137.8,236.2,137.8z"/>
+                                </svg>
+                            </div>
+                            <div class="mission-label-confirm">MISSION</div>
+                            <div class="mission-name-display" id="missionNameFinalDisplay">ストリクス</div>
+                            
+                            <div class="tasks-list-confirm" id="tasksListConfirm">
+                                <!-- タスクリストが動的に追加される -->
+                            </div>
+
+                            <div class="confirm-message">
+                                以上のミッションを<br>作成しますか?
+                            </div>
+                        </div>
+                        <div class="spacer"></div>
+                        <div class="button-area">
+                            <button class="confirm-btn" onclick="confirmMission()">
+                                作成
+                            </button>
+                            <button class="edit-btn" onclick="goBackToTaskAdd()">
+                                編集
+                            </button>
+                            <button class="restart-btn" onclick="restartMissionCreation()">
+                                やり直す
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 成功オーバーレイ -->
+                <div class="success-overlay" id="successOverlay">
+                    <div class="success-icon">✓</div>
+                    <div class="success-text">MISSION CREATED</div>
+                    <div class="success-subtext">ホーム画面に戻ります</div>
+                </div>
+
+                <!-- 下部ナビゲーション -->
+                <nav class="bottom-nav">
+                    <button class="nav-item" onclick="navigateTo('home')">
+                        <svg class="nav-icon" viewBox="0 0 256 256">
+                            <path d="M68.8,73L10,130.3l14.6,0.2l14.5,0.1v54.9v54.9h31.3h31.3v-36.6v-36.6h26.1H154v36.6v36.6h31.3h31.3v-54.9v-54.9h14.6H246l-19.9-19.4l-19.9-19.3V69.4V47h-15.7h-15.7v7.2v7.2l-23.4-22.9c-12.9-12.6-23.5-22.9-23.6-22.9C127.7,15.7,101.1,41.5,68.8,73z"/>
+                        </svg>
+                        <span class="nav-label">HOME</span>
+                    </button>
+                    <button class="nav-item active" onclick="navigateTo('create')">
+                        <svg class="nav-icon" viewBox="0 0 256 256">
+                            <path d="M128,216.5c-49.2,0-88.5-39.3-88.5-88.5c0-49.2,39.3-88.5,88.5-88.5c49.2,0,88.5,39.3,88.5,88.5C216.5,177.2,177.2,216.5,128,216.5z M128,59.2c-38.4,0-68.8,30.5-68.8,68.8c0,38.3,30.5,68.8,68.8,68.8c38.4,0,68.8-30.5,68.8-68.8C196.8,89.7,166.4,59.2,128,59.2z M128,167.3c-21.6,0-39.3-17.7-39.3-39.3c0-21.6,17.7-39.3,39.3-39.3c21.6,0,39.3,17.7,39.3,39.3C167.3,149.6,149.6,167.3,128,167.3z M128,108.3c-10.8,0-19.7,8.8-19.7,19.7c0,10.8,8.8,19.7,19.7,19.7c10.8,0,19.7-8.8,19.7-19.7C147.7,117.2,138.8,108.3,128,108.3z"/>
+                            <path d="M128,246c-5.9,0-9.8-3.9-9.8-9.8v-78.7c0-5.9,3.9-9.8,9.8-9.8c5.9,0,9.8,3.9,9.8,9.8v78.7C137.8,242.1,133.9,246,128,246z"/>
+                            <path d="M128,108.3c-5.9,0-9.8-3.9-9.8-9.8V19.8c0-5.9,3.9-9.8,9.8-9.8c5.9,0,9.8,3.9,9.8,9.8v78.7C137.8,104.4,133.9,108.3,128,108.3z"/>
+                            <path d="M98.5,137.8H19.8c-5.9,0-9.8-3.9-9.8-9.8c0-5.9,3.9-9.8,9.8-9.8h78.7c5.9,0,9.8,3.9,9.8,9.8C108.3,133.9,104.4,137.8,98.5,137.8z"/>
+                            <path d="M236.2,137.8h-78.7c-5.9,0-9.8-3.9-9.8-9.8c0-5.9,3.9-9.8,9.8-9.8h78.7c5.9,0,9.8,3.9,9.8,9.8C246,133.9,242.1,137.8,236.2,137.8z"/>
+                        </svg>
+                        <span class="nav-label">MISSION</span>
+                    </button>
+                    <button class="nav-item" onclick="navigateTo('settings')">
+                        <svg class="nav-icon" viewBox="0 0 256 256">
+                            <path d="M234.2,108.3h-8.1c-6.5,0-13.2-4.3-14.9-9.5c-1.7-5.2-4.6-21.6,0-26.2l5.8-5.8c4.6-4.6,4.6-12.1,0-16.7L205.9,39c-4.6-4.6-12.1-4.6-16.7,0l-5.8,5.8c-4.6,4.6-12.3,6.3-17.1,3.8c-4.8-2.5-18.6-12.1-18.6-18.6v-8.2c0-6.5-5.3-11.8-11.8-11.8h-15.7c-6.5,0-11.8,5.3-11.8,11.8v8.2c0,6.5-4.3,13.2-9.6,14.9c-5.2,1.7-21.6,4.6-26.2,0L66.8,39c-4.6-4.6-12.1-4.6-16.7,0L39,50.1c-4.6,4.6-4.6,12.1,0,16.7l5.8,5.8c4.6,4.6,6.3,12.3,3.8,17.1c-2.5,4.8-12.1,18.6-18.6,18.6h-8.1c-6.5,0-11.8,5.3-11.8,11.8v15.8c0,6.5,5.3,11.8,11.8,11.8H30c6.5,0,13.2,4.3,14.9,9.5c1.7,5.3,4.6,21.6,0,26.2l-5.8,5.8c-4.6,4.6-4.6,12.1,0,16.7L50.1,217c4.6,4.6,12.1,4.6,16.7,0l5.8-5.8c4.6-4.6,12.3-6.3,17.1-3.8c4.8,2.5,18.6,12.1,18.6,18.6v8.2c0,6.5,5.3,11.8,11.8,11.8h15.7c6.5,0,11.8-5.3,11.8-11.8v-8.1c0-6.5,4.3-13.2,9.6-14.9c5.3-1.7,21.6-4.6,26.2,0l5.8,5.8c4.6,4.6,12.1,4.6,16.7,0l11.1-11.1c4.6-4.6,4.6-12.1,0-16.7l-5.8-5.8c-4.6-4.6-6.3-12.3-3.8-17.1c2.5-4.8,12.1-18.6,18.6-18.6h8.1c6.5,0,11.8-5.3,11.8-11.8v-15.7C246,113.6,240.7,108.3,234.2,108.3L234.2,108.3z M128,177.2c-27.2,0-49.2-22-49.2-49.2c0-27.2,22-49.2,49.2-49.2s49.2,22,49.2,49.2S155.2,177.2,128,177.2z"/>
+                        </svg>
+                        <span class="nav-label">SETTINGS</span>
+                    </button>
+                </nav>
+            </div>
+
+            <!-- ========== 設定画面 ========== -->
+            <div class="screen screen-settings hidden-right" id="screenSettings">
+                <div class="screen-content">
+                    <div class="create-header">
+                        <button class="back-btn" onclick="navigateTo('home')">←</button>
+                        <div class="header-title">SETTINGS</div>
+                        <div class="header-spacer"></div>
+                    </div>
+                    <div class="settings-main-content">
+                        <div class="settings-group">
+                            <div class="settings-group-title">GENERAL</div>
+                            <div class="settings-item" onclick="showSettingsAlert('テーマ設定')">
+                                <span class="settings-item-label">テーマ</span>
+                                <span class="settings-item-arrow">→</span>
+                            </div>
+                            <div class="settings-item" onclick="showSettingsAlert('通知設定')">
+                                <span class="settings-item-label">通知</span>
+                                <span class="settings-item-arrow">→</span>
+                            </div>
+                            <div class="settings-item" onclick="showSettingsAlert('言語設定')">
+                                <span class="settings-item-label">言語</span>
+                                <span class="settings-item-arrow">→</span>
+                            </div>
+                        </div>
+                        <div class="settings-group">
+                            <div class="settings-group-title">DATA</div>
+                            <div class="settings-item" onclick="showSettingsAlert('データエクスポート')">
+                                <span class="settings-item-label">データエクスポート</span>
+                                <span class="settings-item-arrow">→</span>
+                            </div>
+                            <div class="settings-item" onclick="showSettingsAlert('データリセット')">
+                                <span class="settings-item-label">データリセット</span>
+                                <span class="settings-item-arrow">→</span>
+                            </div>
+                        </div>
+                        <div class="settings-group">
+                            <div class="settings-group-title">ABOUT</div>
+                            <div class="settings-item" onclick="showSettingsAlert('利用規約')">
+                                <span class="settings-item-label">利用規約</span>
+                                <span class="settings-item-arrow">→</span>
+                            </div>
+                            <div class="settings-item" onclick="showSettingsAlert('プライバシーポリシー')">
+                                <span class="settings-item-label">プライバシーポリシー</span>
+                                <span class="settings-item-arrow">→</span>
+                            </div>
+                        </div>
+                        <div class="version-info">
+                            Mission Leveler v1.0.0
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 下部ナビゲーション -->
+                <nav class="bottom-nav">
+                    <button class="nav-item" onclick="navigateTo('home')">
+                        <svg class="nav-icon" viewBox="0 0 256 256">
+                            <path d="M68.8,73L10,130.3l14.6,0.2l14.5,0.1v54.9v54.9h31.3h31.3v-36.6v-36.6h26.1H154v36.6v36.6h31.3h31.3v-54.9v-54.9h14.6H246l-19.9-19.4l-19.9-19.3V69.4V47h-15.7h-15.7v7.2v7.2l-23.4-22.9c-12.9-12.6-23.5-22.9-23.6-22.9C127.7,15.7,101.1,41.5,68.8,73z"/>
+                        </svg>
+                        <span class="nav-label">HOME</span>
+                    </button>
+                    <button class="nav-item" onclick="navigateTo('create')">
+                        <svg class="nav-icon" viewBox="0 0 256 256">
+                            <path d="M128,216.5c-49.2,0-88.5-39.3-88.5-88.5c0-49.2,39.3-88.5,88.5-88.5c49.2,0,88.5,39.3,88.5,88.5C216.5,177.2,177.2,216.5,128,216.5z M128,59.2c-38.4,0-68.8,30.5-68.8,68.8c0,38.3,30.5,68.8,68.8,68.8c38.4,0,68.8-30.5,68.8-68.8C196.8,89.7,166.4,59.2,128,59.2z M128,167.3c-21.6,0-39.3-17.7-39.3-39.3c0-21.6,17.7-39.3,39.3-39.3c21.6,0,39.3,17.7,39.3,39.3C167.3,149.6,149.6,167.3,128,167.3z M128,108.3c-10.8,0-19.7,8.8-19.7,19.7c0,10.8,8.8,19.7,19.7,19.7c10.8,0,19.7-8.8,19.7-19.7C147.7,117.2,138.8,108.3,128,108.3z"/>
+                            <path d="M128,246c-5.9,0-9.8-3.9-9.8-9.8v-78.7c0-5.9,3.9-9.8,9.8-9.8c5.9,0,9.8,3.9,9.8,9.8v78.7C137.8,242.1,133.9,246,128,246z"/>
+                            <path d="M128,108.3c-5.9,0-9.8-3.9-9.8-9.8V19.8c0-5.9,3.9-9.8,9.8-9.8c5.9,0,9.8,3.9,9.8,9.8v78.7C137.8,104.4,133.9,108.3,128,108.3z"/>
+                            <path d="M98.5,137.8H19.8c-5.9,0-9.8-3.9-9.8-9.8c0-5.9,3.9-9.8,9.8-9.8h78.7c5.9,0,9.8,3.9,9.8,9.8C108.3,133.9,104.4,137.8,98.5,137.8z"/>
+                            <path d="M236.2,137.8h-78.7c-5.9,0-9.8-3.9-9.8-9.8c0-5.9,3.9-9.8,9.8-9.8h78.7c5.9,0,9.8,3.9,9.8,9.8C246,133.9,242.1,137.8,236.2,137.8z"/>
+                        </svg>
+                        <span class="nav-label">MISSION</span>
+                    </button>
+                    <button class="nav-item active" onclick="navigateTo('settings')">
+                        <svg class="nav-icon" viewBox="0 0 256 256">
+                            <path d="M234.2,108.3h-8.1c-6.5,0-13.2-4.3-14.9-9.5c-1.7-5.2-4.6-21.6,0-26.2l5.8-5.8c4.6-4.6,4.6-12.1,0-16.7L205.9,39c-4.6-4.6-12.1-4.6-16.7,0l-5.8,5.8c-4.6,4.6-12.3,6.3-17.1,3.8c-4.8-2.5-18.6-12.1-18.6-18.6v-8.2c0-6.5-5.3-11.8-11.8-11.8h-15.7c-6.5,0-11.8,5.3-11.8,11.8v8.2c0,6.5-4.3,13.2-9.6,14.9c-5.2,1.7-21.6,4.6-26.2,0L66.8,39c-4.6-4.6-12.1-4.6-16.7,0L39,50.1c-4.6,4.6-4.6,12.1,0,16.7l5.8,5.8c4.6,4.6,6.3,12.3,3.8,17.1c-2.5,4.8-12.1,18.6-18.6,18.6h-8.1c-6.5,0-11.8,5.3-11.8,11.8v15.8c0,6.5,5.3,11.8,11.8,11.8H30c6.5,0,13.2,4.3,14.9,9.5c1.7,5.3,4.6,21.6,0,26.2l-5.8,5.8c-4.6,4.6-4.6,12.1,0,16.7L50.1,217c4.6,4.6,12.1,4.6,16.7,0l5.8-5.8c4.6-4.6,12.3-6.3,17.1-3.8c4.8,2.5,18.6,12.1,18.6,18.6v8.2c0,6.5,5.3,11.8,11.8,11.8h15.7c6.5,0,11.8-5.3,11.8-11.8v-8.1c0-6.5,4.3-13.2,9.6-14.9c5.3-1.7,21.6-4.6,26.2,0l5.8,5.8c4.6,4.6,12.1,4.6,16.7,0l11.1-11.1c4.6-4.6,4.6-12.1,0-16.7l-5.8-5.8c-4.6-4.6-6.3-12.3-3.8-17.1c2.5-4.8,12.1-18.6,18.6-18.6h8.1c6.5,0,11.8-5.3,11.8-11.8v-15.7C246,113.6,240.7,108.3,234.2,108.3L234.2,108.3z M128,177.2c-27.2,0-49.2-22-49.2-49.2c0-27.2,22-49.2,49.2-49.2s49.2,22,49.2,49.2S155.2,177.2,128,177.2z"/>
+                        </svg>
+                        <span class="nav-label">SETTINGS</span>
+                    </button>
+                </nav>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- プロトタイプ説明 -->
+    <div class="prototype-info">
+        タスク追加画面とミッション全体確認画面を追加
+    </div>
+
+    <script>
+        // ========== ホーム画面の変数と関数 ==========
+        let currentExp = 0;
+        let maxExp = 180;
+        let completedTasks = 0;
+        let totalTasks = 3;
+        let currentLevel = 9;  // テスト用: レベル10でコンフェッティが表示される
+
+        const radius = 118;
+        const circumference = 2 * Math.PI * radius;
+
+        function toggleTask(element) {
+            if (element.classList.contains('completed')) {
+                element.classList.remove('completed');
+                const checkbox = element.querySelector('.task-checkbox');
+                checkbox.textContent = '○';
+                
+                const progressFill = element.querySelector('.task-progress-fill');
+                progressFill.style.width = '0%';
+                
+                const exp = parseInt(element.getAttribute('data-exp')) || 0;
+                currentExp -= exp;
+                completedTasks--;
+                
+            } else {
+                element.classList.add('completed');
+                const checkbox = element.querySelector('.task-checkbox');
+                checkbox.textContent = '✓';
+                
+                const progressFill = element.querySelector('.task-progress-fill');
+                progressFill.style.width = '100%';
+                
+                const circleContainer = document.getElementById('circleContainer');
+                circleContainer.classList.add('pulse');
+                setTimeout(() => circleContainer.classList.remove('pulse'), 600);
+                
+                if (navigator.vibrate) {
+                    navigator.vibrate(30);
+                }
+                
+                const exp = parseInt(element.getAttribute('data-exp')) || 0;
+                currentExp += exp;
+                completedTasks++;
+                
+                if (completedTasks === totalTasks) {
+                    setTimeout(() => {
+                        levelUp();
+                    }, 800);
+                }
+            }
+            
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const progressPercent = Math.round((completedTasks / totalTasks) * 100);
+            document.getElementById('progressPercentage').textContent = progressPercent + '%';
+            
+            document.getElementById('expCurrent').textContent = currentExp;
+            document.getElementById('expMax').textContent = maxExp;
+            
+            updateCircularProgress();
+        }
+
+        function updateCircularProgress() {
+            const taskPercent = completedTasks / totalTasks;
+            const offset = circumference - (taskPercent * circumference);
+            const progressBar = document.getElementById('circleProgressBar');
+            progressBar.style.strokeDashoffset = offset;
+        }
+
+        function levelUp() {
+            const oldLevel = currentLevel;
+            currentLevel++;
+            
+            // レベル表示の準備
+            const levelOld = document.getElementById('levelOld');
+            const levelNew = document.getElementById('levelNew');
+            
+            levelOld.textContent = oldLevel;
+            levelNew.textContent = currentLevel;
+            
+            // アニメーションをリセット
+            levelOld.classList.remove('animate');
+            levelNew.classList.remove('animate');
+            levelOld.style.transform = 'translateY(0)';
+            levelOld.style.opacity = '1';
+            levelNew.style.transform = 'translateY(60px)';
+            levelNew.style.opacity = '0';
+            
+            // オーバーレイを表示
+            const overlay = document.getElementById('levelUpOverlay');
+            const lottieConfetti = document.getElementById('lottieConfetti');
+            
+            // 10の倍数の時のみコンフェッティを表示
+            if (currentLevel % 10 === 0) {
+                lottieConfetti.style.visibility = 'visible';
+                lottieConfetti.style.opacity = '1';
+                // Lottieアニメーションを停止してから再生
+                setTimeout(() => {
+                    if (lottieConfetti.stop) lottieConfetti.stop();
+                    if (lottieConfetti.play) lottieConfetti.play();
+                }, 100);
+            } else {
+                lottieConfetti.style.visibility = 'hidden';
+                lottieConfetti.style.opacity = '0';
+            }
+            
+            overlay.classList.add('show');
+            
+            // スロットアニメーション開始
+            setTimeout(() => {
+                levelOld.classList.add('animate');
+                levelNew.classList.add('animate');
+            }, 500);
+            
+            // 触覚フィードバック
+            if (navigator.vibrate) {
+                navigator.vibrate([50, 50, 100]);
+            }
+            
+            // ホーム画面のレベル表示を更新
+            document.getElementById('levelCenter').textContent = currentLevel;
+        }
+
+        // レベルアップ画面を閉じる(タップで呼び出し)
+        function closeLevelUp() {
+            const overlay = document.getElementById('levelUpOverlay');
+            const lottieConfetti = document.getElementById('lottieConfetti');
+            
+            overlay.classList.remove('show');
+            
+            // コンフェッティを非表示に戻す
+            setTimeout(() => {
+                lottieConfetti.style.visibility = 'hidden';
+                lottieConfetti.style.opacity = '0';
+                if (lottieConfetti.stop) lottieConfetti.stop();
+            }, 500);
+        }
+
+        // ========== ミッション作成の変数と関数 ==========
+        const missionInput = document.getElementById('missionInput');
+        const nextBtn = document.getElementById('nextBtn');
+        const charCounter = document.getElementById('charCounter');
+        const successOverlay = document.getElementById('successOverlay');
+
+        let missionName = '';
+        let tasksList = [];
+        let selectedTaskIndex = -1;
+
+        function updateCharCount() {
+            const length = missionInput.value.length;
+            charCounter.textContent = `${length} / 20`;
+            
+            if (length > 15) {
+                charCounter.classList.add('warning');
+            } else {
+                charCounter.classList.remove('warning');
+            }
+
+            nextBtn.disabled = length === 0;
+        }
+
+        function goToTaskAdd() {
+            missionName = missionInput.value.trim();
+            if (missionName) {
+                document.getElementById('missionDisplayName').textContent = missionName;
+                
+                const screenCreate = document.getElementById('screenCreate');
+                const screenTaskAdd = document.getElementById('screenTaskAdd');
+                
+                screenCreate.classList.add('hidden-left');
+                screenTaskAdd.classList.remove('hidden-right');
+                
+                // タスクリストをリセット
+                tasksList = [];
+                selectedTaskIndex = -1;
+                updateTaskList();
+                
+                setTimeout(() => document.getElementById('taskInput').focus(), 400);
+            }
+        }
+
+        function goBackToCreate() {
+            const screenCreate = document.getElementById('screenCreate');
+            const screenTaskAdd = document.getElementById('screenTaskAdd');
+            
+            screenTaskAdd.classList.add('hidden-right');
+            screenCreate.classList.remove('hidden-left');
+            
+            setTimeout(() => missionInput.focus(), 400);
+        }
+
+        // ========== タスク追加画面の関数 ==========
+        const taskInput = document.getElementById('taskInput');
+        const addTaskBtn = document.getElementById('addTaskBtn');
+        const taskListContainer = document.getElementById('taskListContainer');
+        const taskCountInfo = document.getElementById('taskCountInfo');
+        const confirmTasksBtn = document.getElementById('confirmTasksBtn');
+        const taskEditOptions = document.getElementById('taskEditOptions');
+
+        // タスク入力の監視
+        taskInput.addEventListener('input', () => {
+            addTaskBtn.disabled = taskInput.value.trim().length === 0 || tasksList.length >= 10;
+        });
+
+        // Enterキーでタスク追加
+        function handleTaskInputEnter(event) {
+            if (event.key === 'Enter' && taskInput.value.trim() && tasksList.length < 10) {
+                addTask();
+            }
+        }
+
+        // タスクを追加
+        function addTask() {
+            const taskName = taskInput.value.trim();
+            if (taskName && tasksList.length < 10) {
+                tasksList.push(taskName);
+                taskInput.value = '';
+                addTaskBtn.disabled = true;
+                updateTaskList();
+                
+                if (navigator.vibrate) {
+                    navigator.vibrate(30);
+                }
+            }
+        }
+
+        // タスクリストを更新
+        function updateTaskList() {
+            taskListContainer.innerHTML = '';
+            tasksList.forEach((task, index) => {
+                const taskItem = document.createElement('div');
+                taskItem.className = 'task-list-item';
+                if (index === selectedTaskIndex) {
+                    taskItem.classList.add('selected');
+                }
+                taskItem.onclick = () => selectTask(index);
+                
+                taskItem.innerHTML = `
+                    <div class="task-bullet">${index + 1}</div>
+                    <div class="task-list-name">${task}</div>
+                `;
+                
+                taskListContainer.appendChild(taskItem);
+            });
+            
+            // タスク数表示を更新
+            taskCountInfo.textContent = `${tasksList.length} / 10 タスク`;
+            if (tasksList.length >= 10) {
+                taskCountInfo.classList.add('warning');
+            } else {
+                taskCountInfo.classList.remove('warning');
+            }
+            
+            // 確定ボタンの有効/無効
+            confirmTasksBtn.disabled = tasksList.length === 0;
+            
+            // 編集オプションの表示/非表示
+            if (selectedTaskIndex >= 0) {
+                taskEditOptions.classList.add('show');
+            } else {
+                taskEditOptions.classList.remove('show');
+            }
+        }
+
+        // タスクを選択
+        function selectTask(index) {
+            if (selectedTaskIndex === index) {
+                selectedTaskIndex = -1;  // 選択解除
+            } else {
+                selectedTaskIndex = index;
+            }
+            updateTaskList();
+        }
+
+        // タスク編集オプションのボタンにイベントリスナーを追加
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初期化時にイベントリスナーを設定
+            const editButtons = document.querySelectorAll('.edit-option-btn');
+            editButtons.forEach(btn => {
+                if (btn.textContent.includes('名前変更')) {
+                    btn.addEventListener('click', editTaskName);
+                } else if (btn.textContent.includes('削除')) {
+                    btn.addEventListener('click', deleteTask);
+                }
+            });
+        });
+
+        // タスク名を変更
+        function editTaskName() {
+            if (selectedTaskIndex >= 0) {
+                const newName = prompt('新しいタスク名を入力してください', tasksList[selectedTaskIndex]);
+                if (newName && newName.trim()) {
+                    tasksList[selectedTaskIndex] = newName.trim();
+                    updateTaskList();
+                }
+            }
+        }
+
+        // タスクを削除
+        function deleteTask() {
+            if (selectedTaskIndex >= 0) {
+                if (confirm('このタスクを削除しますか?')) {
+                    tasksList.splice(selectedTaskIndex, 1);
+                    selectedTaskIndex = -1;
+                    updateTaskList();
+                    
+                    if (navigator.vibrate) {
+                        navigator.vibrate(50);
+                    }
+                }
+            }
+        }
+
+        // ミッション全体確認画面へ
+        function goToFinalConfirm() {
+            if (tasksList.length > 0) {
+                document.getElementById('missionNameFinalDisplay').textContent = missionName;
+                
+                // タスクリストを表示
+                const tasksListConfirm = document.getElementById('tasksListConfirm');
+                tasksListConfirm.innerHTML = '';
+                tasksList.forEach((task, index) => {
+                    const taskItem = document.createElement('div');
+                    taskItem.className = 'confirm-task-item';
+                    taskItem.innerHTML = `
+                        <div class="confirm-task-bullet">${index + 1}</div>
+                        <div class="confirm-task-name">${task}</div>
+                    `;
+                    tasksListConfirm.appendChild(taskItem);
+                });
+                
+                const screenTaskAdd = document.getElementById('screenTaskAdd');
+                const screenConfirm = document.getElementById('screenConfirm');
+                
+                screenTaskAdd.classList.add('hidden-left');
+                screenConfirm.classList.remove('hidden-right');
+            }
+        }
+
+        function goBackToTaskAdd() {
+            successOverlay.classList.remove('show');
+            
+            const screenTaskAdd = document.getElementById('screenTaskAdd');
+            const screenConfirm = document.getElementById('screenConfirm');
+            
+            screenConfirm.classList.add('hidden-right');
+            screenTaskAdd.classList.remove('hidden-left');
+            
+            setTimeout(() => taskInput.focus(), 400);
+        }
+
+        function restartMissionCreation() {
+            if (confirm('ミッション名の入力からやり直しますか?\n入力したタスクは削除されます。')) {
+                successOverlay.classList.remove('show');
+                
+                const screenConfirm = document.getElementById('screenConfirm');
+                const screenCreate = document.getElementById('screenCreate');
+                
+                screenConfirm.classList.add('hidden-right');
+                screenCreate.classList.remove('hidden-left');
+                
+                // データをリセット
+                missionName = '';
+                tasksList = [];
+                selectedTaskIndex = -1;
+                missionInput.value = '';
+                taskInput.value = '';
+                updateCharCount();
+                updateTaskList();
+                
+                setTimeout(() => missionInput.focus(), 400);
+            }
+        }
+
+        function confirmMission() {
+            successOverlay.classList.add('show');
+
+            if (navigator.vibrate) {
+                navigator.vibrate([50, 50, 100]);
+            }
+
+            setTimeout(() => {
+                successOverlay.classList.remove('show');
+                
+                // ホーム画面にミッションを反映
+                applyMissionToHome();
+                
+                navigateTo('home');
+                
+                // データをリセット
+                missionName = '';
+                tasksList = [];
+                selectedTaskIndex = -1;
+                missionInput.value = '';
+                taskInput.value = '';
+                updateCharCount();
+                updateTaskList();
+            }, 2000);
+        }
+
+        // 作成したミッションをホーム画面に反映
+        function applyMissionToHome() {
+            // ミッション名を更新
+            const missionNameElement = document.querySelector('.mission-name');
+            missionNameElement.textContent = missionName.toUpperCase();
+            
+            // タスクリストを更新
+            const tasksSection = document.querySelector('.tasks-section');
+            const sectionHeader = tasksSection.querySelector('.section-header');
+            
+            // 既存のタスクカードを全て削除
+            const existingTasks = tasksSection.querySelectorAll('.task-card');
+            existingTasks.forEach(task => task.remove());
+            
+            // 新しいタスクカードを作成
+            tasksList.forEach((taskName, index) => {
+                const taskCard = document.createElement('div');
+                taskCard.className = 'task-card';
+                taskCard.setAttribute('data-exp', '50'); // デフォルト50 EXP
+                taskCard.onclick = function() { toggleTask(this); };
+                
+                taskCard.innerHTML = `
+                    <div class="task-header">
+                        <div class="task-title">
+                            <div class="task-checkbox">○</div>
+                            <span class="task-name">${taskName}</span>
+                        </div>
+                        <div class="task-exp">+50 EXP</div>
+                    </div>
+                    <div class="task-progress">
+                        <div class="task-progress-fill" style="width: 0%"></div>
+                    </div>
+                `;
+                
+                tasksSection.appendChild(taskCard);
+            });
+            
+            // タスク数を更新
+            totalTasks = tasksList.length;
+            completedTasks = 0;
+            currentExp = 0;
+            
+            // プログレス表示をリセット
+            updateProgress();
+        }
+
+        // ========== ナビゲーション ==========
+        let currentScreen = 'home';
+
+        function navigateTo(screen) {
+            // 作成途中のミッションがある場合は警告
+            if (currentScreen === 'create' || currentScreen === 'task-add' || currentScreen === 'confirm') {
+                if (screen !== 'create' && screen !== 'task-add' && screen !== 'confirm') {
+                    if (missionName || tasksList.length > 0) {
+                        if (!confirm('作成途中のミッションは破棄されます。よろしいですか?')) {
+                            return;
+                        }
+                        // データをリセット
+                        missionName = '';
+                        tasksList = [];
+                        selectedTaskIndex = -1;
+                        missionInput.value = '';
+                        taskInput.value = '';
+                        updateCharCount();
+                        updateTaskList();
+                    }
+                }
+            }
+
+            const screenHome = document.getElementById('screenHome');
+            const screenCreate = document.getElementById('screenCreate');
+            const screenTaskAdd = document.getElementById('screenTaskAdd');
+            const screenConfirm = document.getElementById('screenConfirm');
+            const screenSettings = document.getElementById('screenSettings');
+
+            // 全画面を非表示
+            screenHome.classList.add('hidden-right');
+            screenCreate.classList.add('hidden-right');
+            screenTaskAdd.classList.add('hidden-right');
+            screenConfirm.classList.add('hidden-right');
+            screenSettings.classList.add('hidden-right');
+
+            // 選択された画面を表示
+            switch(screen) {
+                case 'home':
+                    screenHome.classList.remove('hidden-right', 'hidden-left');
+                    break;
+                case 'create':
+                    screenCreate.classList.remove('hidden-right', 'hidden-left');
+                    setTimeout(() => missionInput.focus(), 400);
+                    break;
+                case 'settings':
+                    screenSettings.classList.remove('hidden-right', 'hidden-left');
+                    break;
+            }
+
+            // ナビゲーションのアクティブ状態を更新
+            updateNavActive(screen);
+            currentScreen = screen;
+        }
+
+        function updateNavActive(screen) {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            document.querySelectorAll('.bottom-nav').forEach(nav => {
+                const items = nav.querySelectorAll('.nav-item');
+                switch(screen) {
+                    case 'home':
+                        items[0].classList.add('active');
+                        break;
+                    case 'create':
+                        items[1].classList.add('active');
+                        break;
+                    case 'settings':
+                        items[2].classList.add('active');
+                        break;
+                }
+            });
+        }
+
+        function showSettingsAlert(feature) {
+            alert(`${feature}(実装予定)`);
+        }
+
+        // Enterキーで次へ
+        missionInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && missionInput.value.trim()) {
+                goToTaskAdd();
+            }
+        });
+
+        // 初期化
+        updateCircularProgress();
+    </script>
+</body>
+</html>
