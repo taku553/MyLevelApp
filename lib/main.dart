@@ -38,10 +38,24 @@ void main() async {
   await userStatsRepo.init();
   debugPrint('🚀 main: Repositories initialized successfully');
 
-  // デバッグ用：コンフェッティテスト用にレベル9から開始
-  // TODO: テスト完了後はこのコードを削除すること
-  if (kDebugMode) {
-    debugPrint('🎮 DEBUG: Setting level to 9 for confetti testing');
+  // デバッグ用：起動時のステータス操作フラグ
+  // 通常起動:           flutter run
+  // レベル1初期化:      flutter run --dart-define=RESET_STATS=true
+  // レベル9テスト起動:  flutter run --dart-define=FORCE_LEVEL_9=true
+  const bool resetStats = bool.fromEnvironment(
+    'RESET_STATS',
+    defaultValue: false,
+  );
+  const bool forceLevel9 = bool.fromEnvironment(
+    'FORCE_LEVEL_9',
+    defaultValue: false,
+  );
+  if (resetStats) {
+    debugPrint('🔄 DEBUG: Resetting stats to level 1');
+    const initialStats = UserStats(level: 1, currentExp: 0, nextLevelExp: 100);
+    await userStatsRepo.saveStats(initialStats);
+  } else if (forceLevel9) {
+    debugPrint('🎮 DEBUG: Setting level to 9 for level-up animation testing');
     const testStats = UserStats(level: 9, currentExp: 0, nextLevelExp: 500);
     await userStatsRepo.saveStats(testStats);
   }
