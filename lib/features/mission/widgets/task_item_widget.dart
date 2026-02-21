@@ -5,6 +5,7 @@ import '../../../core/animations/animation_providers.dart';
 import '../../../core/animations/animation_types.dart';
 import '../../../core/animations/level_up_overlay.dart';
 import '../../../core/animations/level_up_state_provider.dart';
+import '../../../core/animations/mission_complete_overlay.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../home/providers/user_stats_provider.dart';
 import '../../home/providers/exp_progress_controller_provider.dart';
@@ -162,16 +163,20 @@ class _TaskItemWidgetState extends ConsumerState<TaskItemWidget>
                   oldLevel: result.oldLevel!,
                   newLevel: result.newLevel!,
                   onDismiss: () {
-                    debugPrint('🎯 TaskItem: Modal dismissed');
+                    debugPrint('🎯 TaskItem: LevelUp modal dismissed');
                     Navigator.of(dialogContext).pop();
                     // closeModal は LevelUpOverlay 内（ConsumerWidget）で呼ぶ
 
-                    // モーダルが閉じた後にミッション完了処理を実行
+                    // レベルアップモーダルが閉じた後にミッション完了モーダルを表示
                     if (shouldCompleteMission) {
                       debugPrint(
-                        '🎯 TaskItem: Completing mission after modal closed',
+                        '🎯 TaskItem: Showing mission complete modal after level up',
                       );
-                      missionListNotifier.completeMission(missionId);
+                      _showMissionCompleteModal(
+                        rootNavigator,
+                        missionListNotifier,
+                        missionId,
+                      );
                     }
                   },
                 ),
@@ -185,12 +190,43 @@ class _TaskItemWidgetState extends ConsumerState<TaskItemWidget>
         '🎯 TaskItem: No level up - normal task completion/incompletion',
       );
 
-      // レベルアップなしでミッション完了した場合は即座にミッション完了処理
+      // レベルアップなしでミッション完了した場合
       if (result.missionCompleted) {
         debugPrint('🎯 TaskItem: Completing mission (no level up)');
-        await missionListNotifier.completeMission(missionId);
+        // 経験値プログレスバーのアニメーション完了を待ってからモーダル表示
+        await Future.delayed(const Duration(milliseconds: 800));
+        _showMissionCompleteModal(
+          rootNavigator,
+          missionListNotifier,
+          missionId,
+        );
       }
     }
+  }
+
+  /// ミッション完了モーダルを表示
+  void _showMissionCompleteModal(
+    NavigatorState rootNavigator,
+    MissionListNotifier missionListNotifier,
+    String missionId,
+  ) {
+    showDialog(
+      context: rootNavigator.overlay!.context,
+      barrierDismissible: false,
+      barrierColor: Colors.transparent,
+      useRootNavigator: true,
+      builder: (dialogContext) => Material(
+        type: MaterialType.transparency,
+        child: MissionCompleteOverlay(
+          onDismiss: () {
+            debugPrint('🎯 TaskItem: Mission complete modal dismissed');
+            Navigator.of(dialogContext).pop();
+            // モーダルが閉じた後にミッションをクリア
+            missionListNotifier.completeMission(missionId);
+          },
+        ),
+      ),
+    );
   }
 
   @override
