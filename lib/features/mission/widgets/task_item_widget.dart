@@ -176,6 +176,8 @@ class _TaskItemWidgetState extends ConsumerState<TaskItemWidget>
                         rootNavigator,
                         missionListNotifier,
                         missionId,
+                        levelBefore: result.oldLevel,
+                        levelAfter: result.newLevel,
                       );
                     }
                   },
@@ -199,6 +201,8 @@ class _TaskItemWidgetState extends ConsumerState<TaskItemWidget>
           rootNavigator,
           missionListNotifier,
           missionId,
+          levelBefore: result.oldLevel,
+          levelAfter: result.newLevel,
         );
       }
     }
@@ -208,8 +212,10 @@ class _TaskItemWidgetState extends ConsumerState<TaskItemWidget>
   void _showMissionCompleteModal(
     NavigatorState rootNavigator,
     MissionListNotifier missionListNotifier,
-    String missionId,
-  ) {
+    String missionId, {
+    int? levelBefore,
+    int? levelAfter,
+  }) {
     showDialog(
       context: rootNavigator.overlay!.context,
       barrierDismissible: false,
@@ -222,7 +228,11 @@ class _TaskItemWidgetState extends ConsumerState<TaskItemWidget>
             debugPrint('🎯 TaskItem: Mission complete modal dismissed');
             Navigator.of(dialogContext).pop();
             // モーダルが閉じた後にミッションをクリア
-            missionListNotifier.completeMission(missionId);
+            missionListNotifier.completeMission(
+              missionId,
+              levelBefore: levelBefore,
+              levelAfter: levelAfter,
+            );
           },
         ),
       ),

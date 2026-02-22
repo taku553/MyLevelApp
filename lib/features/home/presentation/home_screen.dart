@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../mission/providers/mission_provider.dart';
 import '../providers/user_stats_provider.dart';
@@ -38,34 +39,120 @@ class HomeScreen extends ConsumerWidget {
                 // ヘッダー部分（レベルと経験値）
                 SliverToBoxAdapter(
                   child: Container(
-                    padding: const EdgeInsets.fromLTRB(24, 48, 24, 0),
                     color: AppColors.backgroundWhite,
+                    padding: const EdgeInsets.fromLTRB(0, 24, 0, 24),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        // ミッション名（円形プログレスバーの上）
-                        if (activeMission != null) ...[
-                          Text(
-                            'MISSION',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 1.5,
-                              color: AppColors.textSecondary,
-                            ),
+                        // ─── トップバー行: 履歴 ／ MISSION+名前 ／ 右スペーサー ───
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              // 左: 履歴ボタン
+                              TextButton.icon(
+                                onPressed: () =>
+                                    context.push('/mission/history'),
+                                icon: const Icon(
+                                  Icons.history,
+                                  size: 16,
+                                  color: AppColors.textTertiary,
+                                ),
+                                label: const Text(
+                                  '履歴',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: AppColors.textTertiary,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                style: TextButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 6,
+                                  ),
+                                  minimumSize: Size.zero,
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                ),
+                              ),
+                              // 中央: MISSION ラベル + ミッション名 or CTA
+                              Expanded(
+                                child: activeMission != null
+                                    ? Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            'MISSION',
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w600,
+                                              letterSpacing: 1.5,
+                                              color: AppColors.textSecondary,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            activeMission.title,
+                                            style: const TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.w700,
+                                              color: AppColors.textPrimary,
+                                            ),
+                                            textAlign: TextAlign.center,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      )
+                                    : Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            'MISSION',
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w600,
+                                              letterSpacing: 1.5,
+                                              color: AppColors.textSecondary,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          GestureDetector(
+                                            onTap: () =>
+                                                context.push('/mission/create'),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                const Icon(
+                                                  Icons.add_circle_outline,
+                                                  size: 16,
+                                                  color: AppColors.primary,
+                                                ),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  'ミッションを作成',
+                                                  style: const TextStyle(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: AppColors.primary,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                              ),
+                              // 右スペーサー（左の履歴ボタンと対称に取る）
+                              const SizedBox(width: 68),
+                            ],
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            activeMission.title,
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 24),
-                        ],
-                        // 経験値プログレスバー（レベルも含む）
+                        ),
+                        // ─── 経験値プログレスバー ───
+                        const SizedBox(height: 20),
                         ExpProgressWidget(
                           level: userStats.level,
                           currentExp: userStats.currentExp,

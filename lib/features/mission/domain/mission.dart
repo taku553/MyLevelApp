@@ -14,6 +14,8 @@ class Mission with _$Mission {
     @HiveField(2) @Default([]) List<Task> tasks,
     @HiveField(3) required DateTime createdAt,
     @HiveField(4) DateTime? completedAt,
+    @HiveField(5) int? levelBeforeCompletion,
+    @HiveField(6) int? levelAfterCompletion,
   }) = _Mission;
 
   factory Mission.fromJson(Map<String, dynamic> json) =>

@@ -135,7 +135,11 @@ class MissionListNotifier extends StateNotifier<AsyncValue<List<Mission>>> {
   }
 
   // ミッションを完了状態にする（タスクカードをクリアする）
-  Future<void> completeMission(String missionId) async {
+  Future<void> completeMission(
+    String missionId, {
+    int? levelBefore,
+    int? levelAfter,
+  }) async {
     final missions = state.value;
     if (missions == null) return;
 
@@ -152,7 +156,11 @@ class MissionListNotifier extends StateNotifier<AsyncValue<List<Mission>>> {
         '🎯 MissionListNotifier: Completing mission "${mission.title}"',
       );
 
-      final updatedMission = mission.copyWith(completedAt: DateTime.now());
+      final updatedMission = mission.copyWith(
+        completedAt: DateTime.now(),
+        levelBeforeCompletion: levelBefore,
+        levelAfterCompletion: levelAfter,
+      );
       await _repository.updateMission(updatedMission);
       await _loadMissions();
 
@@ -196,4 +204,46 @@ final missionByIdProvider = Provider.family<Mission?, String>((ref, missionId) {
   } catch (_) {
     return null;
   }
+});
+
+// 完了済みミッション一覧Provider（履歴用）
+// 「鵺」ミッションの completedAt をカットオフ基準として使用。
+// タイトルに加えて作成日時（2026-02-22より前）も条件にすることで
+// 将来同名のミッションを作成してもカットオフ基準がズレない。
+// 「鵺」が存在しない場合（他ユーザー等）は全件表示。
+// missionListProvider を watch することで、ミッション完了時に自動的に再評価される
+
+// ▼ デバッグ用: true にすると空状態画面を確認できる
+const _debugEmptyHistory = false;
+
+final missionHistoryProvider = Provider<List<Mission>>((ref) {
+  if (_debugEmptyHistory) return [];
+
+  ref.watch(missionListProvider); // 変更検知トリガー
+  final repository = ref.watch(missionRepositoryProvider);
+  final all = repository.getCompletedMissions();
+
+  // カットオフ基準ミッションを検索
+  // タイトル「鵺」かつ 2026-02-22 より前に作成されたものに限定
+  final pivotDeadline = DateTime(2026, 2, 22);
+  final pivot = all
+      .where(
+        (m) =>
+            m.title == '鵺' &&
+            m.completedAt != null &&
+            m.createdAt.isBefore(pivotDeadline),
+      )
+      .firstOrNull;
+
+  // 見つからなければ全件返す（他ユーザー向け）
+  if (pivot == null) return all;
+
+  // 「鵺」の完了日時以降のみ返す
+  return all
+      .where(
+        (m) =>
+            m.completedAt != null &&
+            !m.completedAt!.isBefore(pivot.completedAt!),
+      )
+      .toList();
 });

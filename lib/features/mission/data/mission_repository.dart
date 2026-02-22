@@ -45,6 +45,15 @@ class MissionRepository {
     return missions;
   }
 
+  // 完了済みミッション取得（新しい順）
+  List<Mission> getCompletedMissions() {
+    final missions =
+        _box?.values.where((mission) => mission.completedAt != null).toList() ??
+        [];
+    missions.sort((a, b) => b.completedAt!.compareTo(a.completedAt!));
+    return missions;
+  }
+
   // ミッション追加
   Future<void> addMission(Mission mission) async {
     debugPrint(

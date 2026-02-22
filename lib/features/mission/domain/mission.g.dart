@@ -22,13 +22,15 @@ class MissionImplAdapter extends TypeAdapter<_$MissionImpl> {
       tasks: (fields[2] as List).cast<Task>(),
       createdAt: fields[3] as DateTime,
       completedAt: fields[4] as DateTime?,
+      levelBeforeCompletion: fields[5] as int?,
+      levelAfterCompletion: fields[6] as int?,
     );
   }
 
   @override
   void write(BinaryWriter writer, _$MissionImpl obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(7)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -38,7 +40,11 @@ class MissionImplAdapter extends TypeAdapter<_$MissionImpl> {
       ..writeByte(4)
       ..write(obj.completedAt)
       ..writeByte(2)
-      ..write(obj.tasks);
+      ..write(obj.tasks)
+      ..writeByte(5)
+      ..write(obj.levelBeforeCompletion)
+      ..writeByte(6)
+      ..write(obj.levelAfterCompletion);
   }
 
   @override
@@ -60,7 +66,8 @@ _$MissionImpl _$$MissionImplFromJson(Map<String, dynamic> json) =>
     _$MissionImpl(
       id: json['id'] as String,
       title: json['title'] as String,
-      tasks: (json['tasks'] as List<dynamic>?)
+      tasks:
+          (json['tasks'] as List<dynamic>?)
               ?.map((e) => Task.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
@@ -68,6 +75,8 @@ _$MissionImpl _$$MissionImplFromJson(Map<String, dynamic> json) =>
       completedAt: json['completedAt'] == null
           ? null
           : DateTime.parse(json['completedAt'] as String),
+      levelBeforeCompletion: (json['levelBeforeCompletion'] as num?)?.toInt(),
+      levelAfterCompletion: (json['levelAfterCompletion'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$$MissionImplToJson(_$MissionImpl instance) =>
@@ -77,4 +86,6 @@ Map<String, dynamic> _$$MissionImplToJson(_$MissionImpl instance) =>
       'tasks': instance.tasks,
       'createdAt': instance.createdAt.toIso8601String(),
       'completedAt': instance.completedAt?.toIso8601String(),
+      'levelBeforeCompletion': instance.levelBeforeCompletion,
+      'levelAfterCompletion': instance.levelAfterCompletion,
     };
