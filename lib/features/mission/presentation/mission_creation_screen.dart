@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/max_width_container.dart';
 
 class MissionCreationScreen extends ConsumerStatefulWidget {
   const MissionCreationScreen({super.key});
@@ -106,117 +107,104 @@ class _MissionCreationScreenState extends ConsumerState<MissionCreationScreen> {
           onPressed: () => context.pop(),
         ),
       ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(24),
-          children: [
-            // ミッション名入力
-            Center(
-              child: Text(
-                'ミッション名',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _missionTitleController,
-              style: TextStyle(color: AppColors.textPrimary),
-              decoration: InputDecoration(
-                hintText: '例: アルファ',
-                hintStyle: TextStyle(color: AppColors.textTertiary),
-                filled: true,
-                fillColor: AppColors.backgroundWhite,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: AppColors.border),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: AppColors.border),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: AppColors.primary, width: 2),
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 16,
-                ),
-              ),
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'ミッション名を入力してください';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 32),
-            // タスクリスト
-            Center(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'タスクリスト',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                    ),
+      body: MaxWidthContainer(
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            padding: const EdgeInsets.all(24),
+            children: [
+              // ミッション名入力
+              Center(
+                child: Text(
+                  'ミッション名',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
                   ),
-                  const SizedBox(width: 12),
-                  Text(
-                    '${_taskControllers.length} / 10',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppColors.textTertiary,
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            // 列ヘッダー
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: Text(
-                      'タスク名',
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _missionTitleController,
+                style: TextStyle(color: AppColors.textPrimary),
+                decoration: InputDecoration(
+                  hintText: '例: アルファ',
+                  hintStyle: TextStyle(color: AppColors.textTertiary),
+                  filled: true,
+                  fillColor: AppColors.backgroundWhite,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: AppColors.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: AppColors.border),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: AppColors.primary, width: 2),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 16,
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'ミッション名を入力してください';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 32),
+              // タスクリスト
+              Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'タスクリスト',
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 18,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.textSecondary,
+                        color: AppColors.textPrimary,
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  SizedBox(
-                    width: 80,
-                    child: Text(
-                      '獲得経験値',
+                    const SizedBox(width: 12),
+                    Text(
+                      '${_taskControllers.length} / 10',
                       style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textSecondary,
+                        fontSize: 14,
+                        color: AppColors.textTertiary,
                       ),
-                      textAlign: TextAlign.center,
                     ),
-                  ),
-                  if (_taskControllers.length > 1) ...[
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              // 列ヘッダー
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: Text(
+                        'タスク名',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
                     const SizedBox(width: 8),
                     SizedBox(
-                      width: 48,
+                      width: 80,
                       child: Text(
-                        '削除',
+                        '獲得経験値',
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
@@ -225,139 +213,154 @@ class _MissionCreationScreenState extends ConsumerState<MissionCreationScreen> {
                         textAlign: TextAlign.center,
                       ),
                     ),
-                  ],
-                ],
-              ),
-            ),
-            // タスク入力欄
-            ...List.generate(_taskControllers.length, (index) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12.0),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      flex: 3,
-                      child: TextFormField(
-                        controller: _taskControllers[index],
-                        style: TextStyle(color: AppColors.textPrimary),
-                        decoration: InputDecoration(
-                          hintText: 'タスク ${index + 1}',
-                          hintStyle: TextStyle(color: AppColors.textTertiary),
-                          filled: true,
-                          fillColor: AppColors.backgroundWhite,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: AppColors.border),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: AppColors.border),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: AppColors.primary,
-                              width: 2,
-                            ),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 16,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    SizedBox(
-                      width: 80,
-                      child: TextFormField(
-                        controller: _expControllers[index],
-                        style: TextStyle(color: AppColors.textPrimary),
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          hintText: 'EXP',
-                          hintStyle: TextStyle(color: AppColors.textTertiary),
-                          filled: true,
-                          fillColor: AppColors.backgroundWhite,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: AppColors.border),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: AppColors.border),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: AppColors.primary,
-                              width: 2,
-                            ),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 16,
-                          ),
-                        ),
-                        validator: (value) {
-                          if (value != null && value.isNotEmpty) {
-                            final exp = int.tryParse(value);
-                            if (exp == null || exp < 1) {
-                              return '無効';
-                            }
-                          }
-                          return null;
-                        },
-                      ),
-                    ),
                     if (_taskControllers.length > 1) ...[
                       const SizedBox(width: 8),
-                      IconButton(
-                        icon: const Icon(Icons.remove_circle_outline),
-                        color: AppColors.error,
-                        onPressed: () => _removeTaskField(index),
+                      SizedBox(
+                        width: 48,
+                        child: Text(
+                          '削除',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textSecondary,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     ],
                   ],
                 ),
-              );
-            }),
-            const SizedBox(height: 8),
-            // タスク追加ボタン
-            if (_taskControllers.length < 10)
-              OutlinedButton.icon(
-                onPressed: _addTaskField,
-                icon: const Icon(Icons.add),
-                label: const Text('タスクを追加'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.primary,
-                  side: BorderSide(color: AppColors.primary),
+              ),
+              // タスク入力欄
+              ...List.generate(_taskControllers.length, (index) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12.0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: TextFormField(
+                          controller: _taskControllers[index],
+                          style: TextStyle(color: AppColors.textPrimary),
+                          decoration: InputDecoration(
+                            hintText: 'タスク ${index + 1}',
+                            hintStyle: TextStyle(color: AppColors.textTertiary),
+                            filled: true,
+                            fillColor: AppColors.backgroundWhite,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: AppColors.border),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: AppColors.border),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: AppColors.primary,
+                                width: 2,
+                              ),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 16,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      SizedBox(
+                        width: 80,
+                        child: TextFormField(
+                          controller: _expControllers[index],
+                          style: TextStyle(color: AppColors.textPrimary),
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            hintText: 'EXP',
+                            hintStyle: TextStyle(color: AppColors.textTertiary),
+                            filled: true,
+                            fillColor: AppColors.backgroundWhite,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: AppColors.border),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: AppColors.border),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: AppColors.primary,
+                                width: 2,
+                              ),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 16,
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value != null && value.isNotEmpty) {
+                              final exp = int.tryParse(value);
+                              if (exp == null || exp < 1) {
+                                return '無効';
+                              }
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                      if (_taskControllers.length > 1) ...[
+                        const SizedBox(width: 8),
+                        IconButton(
+                          icon: const Icon(Icons.remove_circle_outline),
+                          color: AppColors.error,
+                          onPressed: () => _removeTaskField(index),
+                        ),
+                      ],
+                    ],
+                  ),
+                );
+              }),
+              const SizedBox(height: 8),
+              // タスク追加ボタン
+              if (_taskControllers.length < 10)
+                OutlinedButton.icon(
+                  onPressed: _addTaskField,
+                  icon: const Icon(Icons.add),
+                  label: const Text('タスクを追加'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.primary,
+                    side: BorderSide(color: AppColors.primary),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 32),
+              // 作成ボタン
+              ElevatedButton(
+                onPressed: _navigateToConfirmation,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
+                  elevation: 2,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-              ),
-            const SizedBox(height: 32),
-            // 作成ボタン
-            ElevatedButton(
-              onPressed: _navigateToConfirmation,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                child: const Text(
+                  '次へ',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
               ),
-              child: const Text(
-                '次へ',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

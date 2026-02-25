@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/max_width_container.dart';
 import '../domain/mission.dart';
 import '../providers/mission_provider.dart';
 
@@ -36,15 +37,17 @@ class MissionHistoryScreen extends ConsumerWidget {
           child: Container(height: 1, color: AppColors.border),
         ),
       ),
-      body: history.isEmpty
-          ? _buildEmpty(context)
-          : ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              itemCount: history.length,
-              itemBuilder: (context, index) {
-                return _MissionHistoryCard(mission: history[index]);
-              },
-            ),
+      body: MaxWidthContainer(
+        child: history.isEmpty
+            ? _buildEmpty(context)
+            : ListView.builder(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                itemCount: history.length,
+                itemBuilder: (context, index) {
+                  return _MissionHistoryCard(mission: history[index]);
+                },
+              ),
+      ),
     );
   }
 

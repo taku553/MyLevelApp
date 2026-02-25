@@ -44,36 +44,43 @@ class _BottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final currentIndex = _calculateSelectedIndex(context);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.backgroundWhite,
-        border: Border(top: BorderSide(color: AppColors.border, width: 1)),
-      ),
-      child: SafeArea(
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _NavItem(
-                icon: Icons.home,
-                label: 'ホーム',
-                isActive: currentIndex == 0,
-                onTap: () => _onItemTapped(context, 0),
+    return IntrinsicHeight(
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.backgroundWhite,
+          border: Border(top: BorderSide(color: AppColors.border, width: 1)),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 600),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _NavItem(
+                      icon: Icons.home,
+                      label: 'ホーム',
+                      isActive: currentIndex == 0,
+                      onTap: () => _onItemTapped(context, 0),
+                    ),
+                    _NavItem(
+                      icon: Icons.gps_fixed,
+                      label: 'ミッション',
+                      isActive: currentIndex == 1,
+                      onTap: () => _onItemTapped(context, 1),
+                    ),
+                    _NavItem(
+                      icon: Icons.settings,
+                      label: '設定',
+                      isActive: currentIndex == 2,
+                      onTap: () => _onItemTapped(context, 2),
+                    ),
+                  ],
+                ),
               ),
-              _NavItem(
-                icon: Icons.gps_fixed,
-                label: 'ミッション',
-                isActive: currentIndex == 1,
-                onTap: () => _onItemTapped(context, 1),
-              ),
-              _NavItem(
-                icon: Icons.settings,
-                label: '設定',
-                isActive: currentIndex == 2,
-                onTap: () => _onItemTapped(context, 2),
-              ),
-            ],
+            ),
           ),
         ),
       ),

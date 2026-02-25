@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/max_width_container.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -23,80 +24,82 @@ class SettingsScreen extends ConsumerWidget {
           ),
         ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          _buildSettingsSection(
-            title: 'アプリ情報',
-            items: [
-              _SettingsItem(
-                icon: Icons.info_outline,
-                title: 'バージョン',
-                trailing: const Text(
-                  '1.0.0',
-                  style: TextStyle(fontSize: 14, color: Color(0xFF718096)),
+      body: MaxWidthContainer(
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            _buildSettingsSection(
+              title: 'アプリ情報',
+              items: [
+                _SettingsItem(
+                  icon: Icons.info_outline,
+                  title: 'バージョン',
+                  trailing: const Text(
+                    '1.0.0',
+                    style: TextStyle(fontSize: 14, color: Color(0xFF718096)),
+                  ),
+                  onTap: null,
                 ),
-                onTap: null,
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          _buildSettingsSection(
-            title: 'データ管理',
-            items: [
-              _SettingsItem(
-                icon: Icons.delete_outline,
-                title: 'データを削除',
-                trailing: const Icon(
-                  Icons.chevron_right,
-                  color: Color(0xFFA0AEC0),
+              ],
+            ),
+            const SizedBox(height: 24),
+            _buildSettingsSection(
+              title: 'データ管理',
+              items: [
+                _SettingsItem(
+                  icon: Icons.delete_outline,
+                  title: 'データを削除',
+                  trailing: const Icon(
+                    Icons.chevron_right,
+                    color: Color(0xFFA0AEC0),
+                  ),
+                  onTap: () {
+                    // TODO: Show confirmation dialog
+                  },
                 ),
-                onTap: () {
-                  // TODO: Show confirmation dialog
-                },
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          _buildSettingsSection(
-            title: 'その他',
-            items: [
-              _SettingsItem(
-                icon: Icons.help_outline,
-                title: 'ヘルプ',
-                trailing: const Icon(
-                  Icons.chevron_right,
-                  color: Color(0xFFA0AEC0),
+              ],
+            ),
+            const SizedBox(height: 24),
+            _buildSettingsSection(
+              title: 'その他',
+              items: [
+                _SettingsItem(
+                  icon: Icons.help_outline,
+                  title: 'ヘルプ',
+                  trailing: const Icon(
+                    Icons.chevron_right,
+                    color: Color(0xFFA0AEC0),
+                  ),
+                  onTap: () {
+                    // TODO: Navigate to help screen
+                  },
                 ),
-                onTap: () {
-                  // TODO: Navigate to help screen
-                },
-              ),
-              _SettingsItem(
-                icon: Icons.description_outlined,
-                title: '利用規約',
-                trailing: const Icon(
-                  Icons.chevron_right,
-                  color: Color(0xFFA0AEC0),
+                _SettingsItem(
+                  icon: Icons.description_outlined,
+                  title: '利用規約',
+                  trailing: const Icon(
+                    Icons.chevron_right,
+                    color: Color(0xFFA0AEC0),
+                  ),
+                  onTap: () {
+                    // TODO: Navigate to terms screen
+                  },
                 ),
-                onTap: () {
-                  // TODO: Navigate to terms screen
-                },
-              ),
-              _SettingsItem(
-                icon: Icons.privacy_tip_outlined,
-                title: 'プライバシーポリシー',
-                trailing: const Icon(
-                  Icons.chevron_right,
-                  color: Color(0xFFA0AEC0),
+                _SettingsItem(
+                  icon: Icons.privacy_tip_outlined,
+                  title: 'プライバシーポリシー',
+                  trailing: const Icon(
+                    Icons.chevron_right,
+                    color: Color(0xFFA0AEC0),
+                  ),
+                  onTap: () {
+                    // TODO: Navigate to privacy policy screen
+                  },
                 ),
-                onTap: () {
-                  // TODO: Navigate to privacy policy screen
-                },
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/max_width_container.dart';
 import '../widgets/mission_view_card_widget.dart';
 import '../providers/mission_provider.dart';
 import '../domain/mission.dart';
@@ -109,83 +110,88 @@ class _MissionsScreenState extends ConsumerState<MissionsScreen> {
           ),
         ),
       ),
-      body: missionsAsync.when(
-        data: (missions) {
-          if (missions.isEmpty) {
-            // 空の場合は作成画面に自動遷移するのでローディング表示
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: MaxWidthContainer(
+        child: missionsAsync.when(
+          data: (missions) {
+            if (missions.isEmpty) {
+              // 空の場合は作成画面に自動遷移するのでローディング表示
+              return const Center(child: CircularProgressIndicator());
+            }
 
-          final mission = missions.first;
+            final mission = missions.first;
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // ミッションカード（読み取り専用）
-                MissionViewCardWidget(mission: mission),
-                const SizedBox(height: 16),
-                // 編集・新規作成ボタン
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          context.push('/mission/edit', extra: mission);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          elevation: 2,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // ミッションカード（読み取り専用）
+                  MissionViewCardWidget(mission: mission),
+                  const SizedBox(height: 16),
+                  // 編集・新規作成ボタン
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            context.push('/mission/edit', extra: mission);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            elevation: 2,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
-                        ),
-                        child: const Text(
-                          '編集',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
+                          child: const Text(
+                            '編集',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () {
-                          _showDeleteConfirmationDialog(context, mission);
-                        },
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.primary,
-                          side: BorderSide(color: AppColors.primary, width: 2),
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () {
+                            _showDeleteConfirmationDialog(context, mission);
+                          },
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.primary,
+                            side: BorderSide(
+                              color: AppColors.primary,
+                              width: 2,
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
-                        ),
-                        child: const Text(
-                          '新規作成',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
+                          child: const Text(
+                            '新規作成',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, stack) => Center(
+            child: Text(
+              'エラーが発生しました',
+              style: TextStyle(color: AppColors.textSecondary),
             ),
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(
-          child: Text(
-            'エラーが発生しました',
-            style: TextStyle(color: AppColors.textSecondary),
           ),
         ),
       ),

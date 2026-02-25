@@ -52,7 +52,7 @@ class MissionListWidget extends ConsumerWidget {
                     ),
                     SizedBox(height: 8),
                     Text(
-                      '下のボタンから新しいミッションを作成しましょう',
+                      '上の+ボタンまたは下のボタンから新しいミッションを作成',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 14,
