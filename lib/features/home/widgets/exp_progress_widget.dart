@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'dart:math' as math;
 import '../../../core/theme/app_colors.dart';
 import '../../../core/animations/progress_animation_controller.dart';
@@ -207,7 +206,8 @@ class _ExpProgressWidgetState extends ConsumerState<ExpProgressWidget>
                       const SizedBox(height: 6),
                       Text(
                         '$displayLevel',
-                        style: GoogleFonts.lato(
+                        style: const TextStyle(
+                          fontFamily: 'Lato',
                           fontSize: 50,
                           fontWeight: FontWeight.w700,
                           height: 1.0,

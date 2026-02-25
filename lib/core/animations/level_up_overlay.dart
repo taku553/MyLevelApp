@@ -2,7 +2,6 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import '../theme/app_colors.dart';
 import 'level_up_state_provider.dart';
@@ -214,7 +213,8 @@ class _LevelUpOverlayState extends ConsumerState<LevelUpOverlay>
             opacity: _textOpacityAnimation.value,
             child: Text(
               'Level Up!',
-              style: GoogleFonts.roboto(
+              style: TextStyle(
+                fontFamily: 'Roboto',
                 fontSize: 28,
                 fontWeight: FontWeight.w700,
                 fontStyle: FontStyle.italic,
@@ -281,7 +281,8 @@ class _LevelUpOverlayState extends ConsumerState<LevelUpOverlay>
   Widget _buildNumberText(int level) {
     return Text(
       '$level',
-      style: GoogleFonts.lato(
+      style: TextStyle(
+        fontFamily: 'Lato',
         fontSize: 72,
         fontWeight: FontWeight.w800,
         color: AppColors.levelUpWhite,

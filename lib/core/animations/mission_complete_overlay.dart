@@ -1,7 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import '../theme/app_colors.dart';
 
@@ -184,7 +183,8 @@ class _MissionCompleteOverlayState extends State<MissionCompleteOverlay>
             opacity: _congratsOpacityAnimation.value,
             child: Text(
               'Congratulations!',
-              style: GoogleFonts.roboto(
+              style: TextStyle(
+                fontFamily: 'Roboto',
                 fontSize: 36,
                 fontWeight: FontWeight.w700,
                 fontStyle: FontStyle.italic,
@@ -219,7 +219,8 @@ class _MissionCompleteOverlayState extends State<MissionCompleteOverlay>
             opacity: _missionOpacityAnimation.value,
             child: Text(
               'Mission Complete',
-              style: GoogleFonts.lato(
+              style: TextStyle(
+                fontFamily: 'Lato',
                 fontSize: 26,
                 fontWeight: FontWeight.w800,
                 color: AppColors.levelUpWhite,

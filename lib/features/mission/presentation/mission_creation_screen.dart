@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/max_width_container.dart';
 
@@ -100,7 +99,10 @@ class _MissionCreationScreenState extends ConsumerState<MissionCreationScreen> {
         elevation: 0,
         title: Text(
           '新しいミッション',
-          style: GoogleFonts.notoSansJp(color: AppColors.textPrimary),
+          style: const TextStyle(
+            fontFamily: 'NotoSansJP',
+            color: AppColors.textPrimary,
+          ),
         ),
         leading: IconButton(
           icon: Icon(Icons.close, color: AppColors.textPrimary),

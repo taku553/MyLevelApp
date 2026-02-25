@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -105,7 +104,7 @@ class _MissionLevelerAppState extends ConsumerState<MissionLevelerApp> {
           primary: const Color(0xFFF87171),
         ),
         useMaterial3: true,
-        textTheme: GoogleFonts.notoSansJpTextTheme(), // プロジェクト全体のデフォルトフォント
+        fontFamily: 'NotoSansJP', // プロジェクト全体のデフォルトフォント（ローカルアセット）
       ),
       routerConfig: _router,
     );
