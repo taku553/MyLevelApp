@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../domain/user_stats.dart';
 import '../data/user_stats_repository.dart';
@@ -5,20 +6,42 @@ import '../data/user_stats_repository.dart';
 // UserStatsの状態を管理するNotifier
 class UserStatsNotifier extends StateNotifier<AsyncValue<UserStats>> {
   final UserStatsRepository _repository;
+  StreamSubscription<UserStats>? _subscription;
 
   UserStatsNotifier(this._repository) : super(const AsyncValue.loading()) {
-    _loadStats();
+    // まそulローカルデータを表示（高速）
+    _loadFromLocal();
+    // 次にFirestoreリアルタイムストリームを購読
+    _listenToFirestore();
   }
 
-  // 初期ロード
-  Future<void> _loadStats() async {
-    state = const AsyncValue.loading();
+  // Hiveキャッシュから即座に表示
+  void _loadFromLocal() {
     try {
       final stats = _repository.getStats();
       state = AsyncValue.data(stats);
     } catch (e, stack) {
       state = AsyncValue.error(e, stack);
     }
+  }
+
+  // Firestoreリアルタイムストリームを購読
+  // 他デバイスでの変更が即座に反映される
+  void _listenToFirestore() {
+    _subscription = _repository.statsStream.listen(
+      (stats) {
+        state = AsyncValue.data(stats);
+      },
+      onError: (e, stack) {
+        // ストリームエラー時は現在の状態を維持し続ける
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
   }
 
   // 経験値を加算（レベルアップ処理も含む）
@@ -33,7 +56,7 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStats>> {
       // 経験値加算とレベルアップ処理
       final updatedStats = await _repository.addExp(exp);
 
-      // 状態を更新
+      // 状態を更新（Firestoreストリームからも更新が来るが、ローカルを優先）
       state = AsyncValue.data(updatedStats);
 
       // レベルアップしたかどうかを返す
@@ -71,9 +94,9 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStats>> {
     }
   }
 
-  // 手動リロード
+  // 手動リロード（Hiveキャッシュを再読んで現在状態を表示）
   Future<void> reload() async {
-    await _loadStats();
+    _loadFromLocal();
   }
 }
 

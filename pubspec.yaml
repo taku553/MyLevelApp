@@ -41,10 +41,12 @@ dependencies:
   hive_flutter: ^1.1.0
   freezed_annotation: ^2.4.4
   json_annotation: ^4.9.0
-  google_fonts: ^8.0.1
   intl: ^0.20.2
   uuid: ^4.5.2
   lottie: ^3.2.0
+  firebase_core: ^4.4.0
+  firebase_auth: ^6.1.4
+  cloud_firestore: ^6.1.2
 
 dev_dependencies:
   flutter_test:

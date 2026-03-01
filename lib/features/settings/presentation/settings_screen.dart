@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/auth/auth_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/max_width_container.dart';
 
@@ -94,6 +95,45 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                   onTap: () {
                     // TODO: Navigate to privacy policy screen
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            _buildSettingsSection(
+              title: 'アカウント',
+              items: [
+                _SettingsItem(
+                  icon: Icons.logout,
+                  title: 'ログアウト',
+                  trailing: const Icon(
+                    Icons.chevron_right,
+                    color: Color(0xFFA0AEC0),
+                  ),
+                  onTap: () async {
+                    final confirmed = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('ログアウト'),
+                        content: const Text('ログアウトしますか？'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: const Text('キャンセル'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            child: const Text(
+                              'ログアウト',
+                              style: TextStyle(color: Color(0xFFDC2626)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (confirmed == true) {
+                      await ref.read(authServiceProvider).signOut();
+                    }
                   },
                 ),
               ],

@@ -4,6 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'core/auth/auth_service.dart';
+import 'core/auth/login_screen.dart';
 
 import 'core/router/app_router.dart';
 import 'features/mission/domain/task.dart';
@@ -16,6 +20,9 @@ void main() async {
   // Flutterエンジンの初期化
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Firebaseの初期化
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
   // Hive (ローカルDB) の初期化
   await Hive.initFlutter();
 
@@ -24,87 +31,128 @@ void main() async {
   Hive.registerAdapter(MissionImplAdapter()); // typeId: 1
   Hive.registerAdapter(UserStatsImplAdapter()); // typeId: 2
 
-  debugPrint('🚀 main: Creating repository instances...');
-  // Repositoryの初期化
-  final missionRepo = MissionRepository();
-  final userStatsRepo = UserStatsRepository();
-  debugPrint('🚀 main: MissionRepository instance: ${missionRepo.hashCode}');
-  debugPrint(
-    '🚀 main: UserStatsRepository instance: ${userStatsRepo.hashCode}',
-  );
-  debugPrint('🚀 main: Initializing repositories...');
-  await missionRepo.init();
-  await userStatsRepo.init();
-  debugPrint('🚀 main: Repositories initialized successfully');
-
-  // デバッグ用：起動時のステータス操作フラグ
-  // 通常起動:           flutter run
-  // レベル1初期化:      flutter run --dart-define=RESET_STATS=true
-  // レベル9テスト起動:  flutter run --dart-define=FORCE_LEVEL_9=true
-  const bool resetStats = bool.fromEnvironment(
-    'RESET_STATS',
-    defaultValue: false,
-  );
-  const bool forceLevel9 = bool.fromEnvironment(
-    'FORCE_LEVEL_9',
-    defaultValue: false,
-  );
-  if (resetStats) {
-    debugPrint('🔄 DEBUG: Resetting stats to level 1');
-    const initialStats = UserStats(level: 1, currentExp: 0, nextLevelExp: 100);
-    await userStatsRepo.saveStats(initialStats);
-  } else if (forceLevel9) {
-    debugPrint('🎮 DEBUG: Setting level to 9 for level-up animation testing');
-    const testStats = UserStats(level: 9, currentExp: 0, nextLevelExp: 500);
-    await userStatsRepo.saveStats(testStats);
-  }
-
   // 日付フォーマットの日本語化
   await initializeDateFormatting('ja_JP');
 
-  runApp(
-    ProviderScope(
-      overrides: [
-        missionRepositoryProvider.overrideWithValue(missionRepo),
-        userStatsRepositoryProvider.overrideWithValue(userStatsRepo),
-      ],
-      child: const MissionLevelerApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: MissionLevelerApp()));
 }
 
-class MissionLevelerApp extends ConsumerStatefulWidget {
+class MissionLevelerApp extends ConsumerWidget {
   const MissionLevelerApp({super.key});
 
   @override
-  ConsumerState<MissionLevelerApp> createState() => _MissionLevelerAppState();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authStateProvider);
+
+    return MaterialApp(
+      title: 'Mission Leveler',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFFF87171),
+          primary: const Color(0xFFF87171),
+        ),
+        useMaterial3: true,
+        fontFamily: 'NotoSansJP',
+      ),
+      home: authState.when(
+        data: (user) {
+          if (user == null) {
+            // 未ログイン → ログイン画面
+            return const LoginScreen();
+          }
+          // ログイン済み → メインアプリ（UID付きでRepository初期化）
+          return _AuthenticatedApp(uid: user.uid);
+        },
+        loading: () =>
+            const Scaffold(body: Center(child: CircularProgressIndicator())),
+        error: (_, __) => const LoginScreen(),
+      ),
+    );
+  }
 }
 
-class _MissionLevelerAppState extends ConsumerState<MissionLevelerApp> {
+/// ログイン後のメインアプリ
+/// UIDが確定してからRepositoryを初期化し、GoRouterで画面遷移する
+class _AuthenticatedApp extends ConsumerStatefulWidget {
+  final String uid;
+  const _AuthenticatedApp({required this.uid});
+
+  @override
+  ConsumerState<_AuthenticatedApp> createState() => _AuthenticatedAppState();
+}
+
+class _AuthenticatedAppState extends ConsumerState<_AuthenticatedApp> {
   late final GoRouter _router;
+  bool _initialized = false;
 
   @override
   void initState() {
     super.initState();
-    // GoRouterは一度だけ取得してキャッシュする。
-    // ref.watchで毎回buildが走るとGoRouterが再生成され、
-    // AndroidのバックナビゲーションコールバックがProvider内のdisposeで
-    // 適切に管理されるようになる。
-    _router = ref.read(appRouterProvider);
+    _initRepositories();
+  }
+
+  Future<void> _initRepositories() async {
+    debugPrint('🚀 App: Initializing repositories for uid=${widget.uid}');
+
+    final missionRepo = MissionRepository(uid: widget.uid);
+    final userStatsRepo = UserStatsRepository(uid: widget.uid);
+
+    await missionRepo.init();
+    await userStatsRepo.init();
+
+    debugPrint('🚀 App: Repositories initialized successfully');
+
+    // デバッグ用：起動時のステータス操作フラグ
+    const bool resetStats = bool.fromEnvironment(
+      'RESET_STATS',
+      defaultValue: false,
+    );
+    const bool forceLevel9 = bool.fromEnvironment(
+      'FORCE_LEVEL_9',
+      defaultValue: false,
+    );
+    if (resetStats) {
+      debugPrint('🔄 DEBUG: Resetting stats to level 1');
+      const initialStats = UserStats(
+        level: 1,
+        currentExp: 0,
+        nextLevelExp: 100,
+      );
+      await userStatsRepo.saveStats(initialStats);
+    } else if (forceLevel9) {
+      debugPrint('🎮 DEBUG: Setting level to 9');
+      const testStats = UserStats(level: 9, currentExp: 0, nextLevelExp: 500);
+      await userStatsRepo.saveStats(testStats);
+    }
+
+    if (mounted) {
+      // Providerを上書きしてからGoRouterを生成
+      ref.read(missionRepositoryProvider.notifier).state = missionRepo;
+      ref.read(userStatsRepositoryProvider.notifier).state = userStatsRepo;
+      _router = ref.read(appRouterProvider);
+      setState(() {
+        _initialized = true;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!_initialized) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     return MaterialApp.router(
       title: 'Mission Leveler',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFFF87171), // モックアップのアクセントカラー
+          seedColor: const Color(0xFFF87171),
           primary: const Color(0xFFF87171),
         ),
         useMaterial3: true,
-        fontFamily: 'NotoSansJP', // プロジェクト全体のデフォルトフォント（ローカルアセット）
+        fontFamily: 'NotoSansJP',
       ),
       routerConfig: _router,
     );

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
@@ -10,28 +11,55 @@ const _uuid = Uuid();
 // ミッション一覧の状態を管理するNotifier
 class MissionListNotifier extends StateNotifier<AsyncValue<List<Mission>>> {
   final MissionRepository _repository;
+  StreamSubscription<List<Mission>>? _subscription;
 
   MissionListNotifier(this._repository) : super(const AsyncValue.loading()) {
     debugPrint(
       '🎯 MissionListNotifier: Created with repository instance: ${_repository.hashCode}',
     );
-    _loadMissions();
+    // まそローカルデータを表示（高速）
+    _loadFromLocal();
+    // 次にFirestoreリアルタイムストリームを購読
+    _listenToFirestore();
   }
 
-  // ミッション一覧をロード
-  Future<void> _loadMissions() async {
-    state = const AsyncValue.loading();
+  // Hiveキャッシュから即座に表示
+  void _loadFromLocal() {
     try {
       final missions = _repository.getActiveMissions();
-      debugPrint('🔍 MissionListNotifier: Loaded ${missions.length} missions');
-      for (var mission in missions) {
-        debugPrint('  - ${mission.title} (${mission.tasks.length} tasks)');
-      }
+      debugPrint(
+        '🔍 MissionListNotifier: Loaded ${missions.length} missions from local',
+      );
       state = AsyncValue.data(missions);
     } catch (e, stack) {
-      debugPrint('❌ MissionListNotifier: Error loading missions: $e');
+      debugPrint('❌ MissionListNotifier: Error loading local missions: $e');
       state = AsyncValue.error(e, stack);
     }
+  }
+
+  // Firestoreリアルタイムストリームを購読
+  // 他デバイスでの変更が即座に反映される
+  void _listenToFirestore() {
+    _subscription = _repository.allMissionsStream.listen(
+      (allMissions) {
+        // アクティブなミッションのみ表示
+        final active = allMissions.where((m) => m.completedAt == null).toList();
+        debugPrint(
+          '🔴 MissionListNotifier: Realtime update. ${active.length} active missions',
+        );
+        state = AsyncValue.data(active);
+      },
+      onError: (e, stack) {
+        // ストリームエラー時は現在の状態を維持し続ける
+        debugPrint('⚠️ MissionListNotifier: Stream error: $e');
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
   }
 
   // 新しいミッションを追加
@@ -65,7 +93,7 @@ class MissionListNotifier extends StateNotifier<AsyncValue<List<Mission>>> {
       await _repository.addMission(mission);
       debugPrint('✅ MissionListNotifier: Mission saved to repository');
 
-      await _loadMissions();
+      _loadFromLocal(); // 即座にUIを更新（Firestoreストリームも後に更新）
       debugPrint('🔄 MissionListNotifier: Missions reloaded');
     } catch (e, stack) {
       debugPrint('❌ MissionListNotifier: Error adding mission: $e');
@@ -77,7 +105,7 @@ class MissionListNotifier extends StateNotifier<AsyncValue<List<Mission>>> {
   Future<void> updateMission(Mission mission) async {
     try {
       await _repository.updateMission(mission);
-      await _loadMissions();
+      _loadFromLocal();
     } catch (e, stack) {
       state = AsyncValue.error(e, stack);
     }
@@ -87,7 +115,7 @@ class MissionListNotifier extends StateNotifier<AsyncValue<List<Mission>>> {
   Future<void> deleteMission(String missionId) async {
     try {
       await _repository.deleteMission(missionId);
-      await _loadMissions();
+      _loadFromLocal();
     } catch (e, stack) {
       state = AsyncValue.error(e, stack);
     }
@@ -124,7 +152,7 @@ class MissionListNotifier extends StateNotifier<AsyncValue<List<Mission>>> {
       final updatedMission = mission.copyWith(tasks: updatedTasks);
 
       await _repository.updateMission(updatedMission);
-      await _loadMissions();
+      _loadFromLocal();
 
       // 全タスクが完了したかどうかを返す
       return updatedTasks.every((t) => t.isCompleted);
@@ -162,7 +190,7 @@ class MissionListNotifier extends StateNotifier<AsyncValue<List<Mission>>> {
         levelAfterCompletion: levelAfter,
       );
       await _repository.updateMission(updatedMission);
-      await _loadMissions();
+      _loadFromLocal();
 
       debugPrint(
         '✅ MissionListNotifier: Mission completed and removed from active list',
@@ -172,9 +200,9 @@ class MissionListNotifier extends StateNotifier<AsyncValue<List<Mission>>> {
     }
   }
 
-  // 手動リロード
+  // 手動リロード（Hiveキャッシュを再読んで現在状態を表示）
   Future<void> reload() async {
-    await _loadMissions();
+    _loadFromLocal();
   }
 }
 
@@ -206,12 +234,16 @@ final missionByIdProvider = Provider.family<Mission?, String>((ref, missionId) {
   }
 });
 
+// 全ミッション（Firestoreストリーム経由）を購読するProvider
+// missionListProvider はアクティブのみ返すが、こちらは完了済みも含む全件
+final _allMissionsStreamProvider = StreamProvider<List<Mission>>((ref) {
+  final repository = ref.watch(missionRepositoryProvider);
+  return repository.allMissionsStream;
+});
+
 // 完了済みミッション一覧Provider（履歴用）
-// 「鵺」ミッションの completedAt をカットオフ基準として使用。
-// タイトルに加えて作成日時（2026-02-22より前）も条件にすることで
-// 将来同名のミッションを作成してもカットオフ基準がズレない。
-// 「鵺」が存在しない場合（他ユーザー等）は全件表示。
-// missionListProvider を watch することで、ミッション完了時に自動的に再評価される
+// Firestoreストリームに連動してリアルタイムに更新される
+// 「鵺」ミッションの completedAt をカットオフ基準として使用
 
 // ▼ デバッグ用: true にすると空状態画面を確認できる
 const _debugEmptyHistory = false;
@@ -219,9 +251,19 @@ const _debugEmptyHistory = false;
 final missionHistoryProvider = Provider<List<Mission>>((ref) {
   if (_debugEmptyHistory) return [];
 
-  ref.watch(missionListProvider); // 変更検知トリガー
-  final repository = ref.watch(missionRepositoryProvider);
-  final all = repository.getCompletedMissions();
+  // Firestoreストリームから全ミッションを取得
+  final allMissionsAsync = ref.watch(_allMissionsStreamProvider);
+  final allMissions = allMissionsAsync.valueOrNull;
+
+  // ストリームがまだ来ていない場合はHiveから取得（フォールバック）
+  List<Mission> all;
+  if (allMissions != null) {
+    all = allMissions.where((m) => m.completedAt != null).toList();
+    all.sort((a, b) => b.completedAt!.compareTo(a.completedAt!));
+  } else {
+    final repository = ref.watch(missionRepositoryProvider);
+    all = repository.getCompletedMissions();
+  }
 
   // カットオフ基準ミッションを検索
   // タイトル「鵺」かつ 2026-02-22 より前に作成されたものに限定

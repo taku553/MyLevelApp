@@ -66,3 +66,9 @@ android/key.properties
 
 # FVM（Flutter Version Management使用時）
 .fvm/
+
+# Firebase設定ファイル（APIキー等を含むため公開リポジトリでは除外）
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+macos/Runner/GoogleService-Info.plist
+lib/firebase_options.dart
