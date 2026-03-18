@@ -54,11 +54,11 @@ class TaskImplAdapter extends TypeAdapter<_$TaskImpl> {
 // **************************************************************************
 
 _$TaskImpl _$$TaskImplFromJson(Map<String, dynamic> json) => _$TaskImpl(
-  id: json['id'] as String,
-  title: json['title'] as String,
-  isCompleted: json['isCompleted'] as bool? ?? false,
-  exp: (json['exp'] as num?)?.toInt() ?? 250,
-);
+      id: json['id'] as String,
+      title: json['title'] as String,
+      isCompleted: json['isCompleted'] as bool? ?? false,
+      exp: (json['exp'] as num?)?.toInt() ?? 250,
+    );
 
 Map<String, dynamic> _$$TaskImplToJson(_$TaskImpl instance) =>
     <String, dynamic>{

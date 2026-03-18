@@ -20,19 +20,25 @@ class UserStatsImplAdapter extends TypeAdapter<_$UserStatsImpl> {
       level: fields[0] as int,
       currentExp: fields[1] as int,
       nextLevelExp: fields[2] as int,
+      totalExp: fields[3] as int? ?? 0,
+      completedMissionCount: fields[4] as int? ?? 0,
     );
   }
 
   @override
   void write(BinaryWriter writer, _$UserStatsImpl obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(5)
       ..writeByte(0)
       ..write(obj.level)
       ..writeByte(1)
       ..write(obj.currentExp)
       ..writeByte(2)
-      ..write(obj.nextLevelExp);
+      ..write(obj.nextLevelExp)
+      ..writeByte(3)
+      ..write(obj.totalExp)
+      ..writeByte(4)
+      ..write(obj.completedMissionCount);
   }
 
   @override
@@ -55,6 +61,9 @@ _$UserStatsImpl _$$UserStatsImplFromJson(Map<String, dynamic> json) =>
       level: (json['level'] as num?)?.toInt() ?? 1,
       currentExp: (json['currentExp'] as num?)?.toInt() ?? 0,
       nextLevelExp: (json['nextLevelExp'] as num?)?.toInt() ?? 100,
+      totalExp: (json['totalExp'] as num?)?.toInt() ?? 0,
+      completedMissionCount:
+          (json['completedMissionCount'] as num?)?.toInt() ?? 0,
     );
 
 Map<String, dynamic> _$$UserStatsImplToJson(_$UserStatsImpl instance) =>
@@ -62,4 +71,6 @@ Map<String, dynamic> _$$UserStatsImplToJson(_$UserStatsImpl instance) =>
       'level': instance.level,
       'currentExp': instance.currentExp,
       'nextLevelExp': instance.nextLevelExp,
+      'totalExp': instance.totalExp,
+      'completedMissionCount': instance.completedMissionCount,
     };

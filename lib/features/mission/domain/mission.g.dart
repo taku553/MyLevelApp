@@ -39,12 +39,12 @@ class MissionImplAdapter extends TypeAdapter<_$MissionImpl> {
       ..write(obj.createdAt)
       ..writeByte(4)
       ..write(obj.completedAt)
-      ..writeByte(2)
-      ..write(obj.tasks)
       ..writeByte(5)
       ..write(obj.levelBeforeCompletion)
       ..writeByte(6)
-      ..write(obj.levelAfterCompletion);
+      ..write(obj.levelAfterCompletion)
+      ..writeByte(2)
+      ..write(obj.tasks);
   }
 
   @override
@@ -66,8 +66,7 @@ _$MissionImpl _$$MissionImplFromJson(Map<String, dynamic> json) =>
     _$MissionImpl(
       id: json['id'] as String,
       title: json['title'] as String,
-      tasks:
-          (json['tasks'] as List<dynamic>?)
+      tasks: (json['tasks'] as List<dynamic>?)
               ?.map((e) => Task.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],

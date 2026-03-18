@@ -12,8 +12,7 @@ part of 'task.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 Task _$TaskFromJson(Map<String, dynamic> json) {
   return _Task.fromJson(json);
@@ -40,12 +39,11 @@ abstract class $TaskCopyWith<$Res> {
   factory $TaskCopyWith(Task value, $Res Function(Task) then) =
       _$TaskCopyWithImpl<$Res, Task>;
   @useResult
-  $Res call({
-    @HiveField(0) String id,
-    @HiveField(1) String title,
-    @HiveField(2) bool isCompleted,
-    @HiveField(3) int exp,
-  });
+  $Res call(
+      {@HiveField(0) String id,
+      @HiveField(1) String title,
+      @HiveField(2) bool isCompleted,
+      @HiveField(3) int exp});
 }
 
 /// @nodoc
@@ -66,44 +64,39 @@ class _$TaskCopyWithImpl<$Res, $Val extends Task>
     Object? isCompleted = null,
     Object? exp = null,
   }) {
-    return _then(
-      _value.copyWith(
-            id: null == id
-                ? _value.id
-                : id // ignore: cast_nullable_to_non_nullable
-                      as String,
-            title: null == title
-                ? _value.title
-                : title // ignore: cast_nullable_to_non_nullable
-                      as String,
-            isCompleted: null == isCompleted
-                ? _value.isCompleted
-                : isCompleted // ignore: cast_nullable_to_non_nullable
-                      as bool,
-            exp: null == exp
-                ? _value.exp
-                : exp // ignore: cast_nullable_to_non_nullable
-                      as int,
-          )
-          as $Val,
-    );
+    return _then(_value.copyWith(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as String,
+      title: null == title
+          ? _value.title
+          : title // ignore: cast_nullable_to_non_nullable
+              as String,
+      isCompleted: null == isCompleted
+          ? _value.isCompleted
+          : isCompleted // ignore: cast_nullable_to_non_nullable
+              as bool,
+      exp: null == exp
+          ? _value.exp
+          : exp // ignore: cast_nullable_to_non_nullable
+              as int,
+    ) as $Val);
   }
 }
 
 /// @nodoc
 abstract class _$$TaskImplCopyWith<$Res> implements $TaskCopyWith<$Res> {
   factory _$$TaskImplCopyWith(
-    _$TaskImpl value,
-    $Res Function(_$TaskImpl) then,
-  ) = __$$TaskImplCopyWithImpl<$Res>;
+          _$TaskImpl value, $Res Function(_$TaskImpl) then) =
+      __$$TaskImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    @HiveField(0) String id,
-    @HiveField(1) String title,
-    @HiveField(2) bool isCompleted,
-    @HiveField(3) int exp,
-  });
+  $Res call(
+      {@HiveField(0) String id,
+      @HiveField(1) String title,
+      @HiveField(2) bool isCompleted,
+      @HiveField(3) int exp});
 }
 
 /// @nodoc
@@ -111,7 +104,7 @@ class __$$TaskImplCopyWithImpl<$Res>
     extends _$TaskCopyWithImpl<$Res, _$TaskImpl>
     implements _$$TaskImplCopyWith<$Res> {
   __$$TaskImplCopyWithImpl(_$TaskImpl _value, $Res Function(_$TaskImpl) _then)
-    : super(_value, _then);
+      : super(_value, _then);
 
   @pragma('vm:prefer-inline')
   @override
@@ -121,26 +114,24 @@ class __$$TaskImplCopyWithImpl<$Res>
     Object? isCompleted = null,
     Object? exp = null,
   }) {
-    return _then(
-      _$TaskImpl(
-        id: null == id
-            ? _value.id
-            : id // ignore: cast_nullable_to_non_nullable
-                  as String,
-        title: null == title
-            ? _value.title
-            : title // ignore: cast_nullable_to_non_nullable
-                  as String,
-        isCompleted: null == isCompleted
-            ? _value.isCompleted
-            : isCompleted // ignore: cast_nullable_to_non_nullable
-                  as bool,
-        exp: null == exp
-            ? _value.exp
-            : exp // ignore: cast_nullable_to_non_nullable
-                  as int,
-      ),
-    );
+    return _then(_$TaskImpl(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as String,
+      title: null == title
+          ? _value.title
+          : title // ignore: cast_nullable_to_non_nullable
+              as String,
+      isCompleted: null == isCompleted
+          ? _value.isCompleted
+          : isCompleted // ignore: cast_nullable_to_non_nullable
+              as bool,
+      exp: null == exp
+          ? _value.exp
+          : exp // ignore: cast_nullable_to_non_nullable
+              as int,
+    ));
   }
 }
 
@@ -148,12 +139,11 @@ class __$$TaskImplCopyWithImpl<$Res>
 @JsonSerializable()
 @HiveType(typeId: 0)
 class _$TaskImpl implements _Task {
-  const _$TaskImpl({
-    @HiveField(0) required this.id,
-    @HiveField(1) required this.title,
-    @HiveField(2) this.isCompleted = false,
-    @HiveField(3) this.exp = 250,
-  });
+  const _$TaskImpl(
+      {@HiveField(0) required this.id,
+      @HiveField(1) required this.title,
+      @HiveField(2) this.isCompleted = false,
+      @HiveField(3) this.exp = 250});
 
   factory _$TaskImpl.fromJson(Map<String, dynamic> json) =>
       _$$TaskImplFromJson(json);
@@ -202,17 +192,18 @@ class _$TaskImpl implements _Task {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$TaskImplToJson(this);
+    return _$$TaskImplToJson(
+      this,
+    );
   }
 }
 
 abstract class _Task implements Task {
-  const factory _Task({
-    @HiveField(0) required final String id,
-    @HiveField(1) required final String title,
-    @HiveField(2) final bool isCompleted,
-    @HiveField(3) final int exp,
-  }) = _$TaskImpl;
+  const factory _Task(
+      {@HiveField(0) required final String id,
+      @HiveField(1) required final String title,
+      @HiveField(2) final bool isCompleted,
+      @HiveField(3) final int exp}) = _$TaskImpl;
 
   factory _Task.fromJson(Map<String, dynamic> json) = _$TaskImpl.fromJson;
 

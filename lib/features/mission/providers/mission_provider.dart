@@ -5,15 +5,18 @@ import 'package:uuid/uuid.dart';
 import '../domain/mission.dart';
 import '../domain/task.dart';
 import '../data/mission_repository.dart';
+import '../../home/data/user_stats_repository.dart';
 
 const _uuid = Uuid();
 
 // ミッション一覧の状態を管理するNotifier
 class MissionListNotifier extends StateNotifier<AsyncValue<List<Mission>>> {
   final MissionRepository _repository;
+  final UserStatsRepository _userStatsRepository;
   StreamSubscription<List<Mission>>? _subscription;
 
-  MissionListNotifier(this._repository) : super(const AsyncValue.loading()) {
+  MissionListNotifier(this._repository, this._userStatsRepository)
+    : super(const AsyncValue.loading()) {
     debugPrint(
       '🎯 MissionListNotifier: Created with repository instance: ${_repository.hashCode}',
     );
@@ -190,6 +193,14 @@ class MissionListNotifier extends StateNotifier<AsyncValue<List<Mission>>> {
         levelAfterCompletion: levelAfter,
       );
       await _repository.updateMission(updatedMission);
+
+      // completedMissionCount を +1
+      final currentStats = _userStatsRepository.getStats();
+      final updatedStats = currentStats.copyWith(
+        completedMissionCount: currentStats.completedMissionCount + 1,
+      );
+      await _userStatsRepository.saveStats(updatedStats);
+
       _loadFromLocal();
 
       debugPrint(
@@ -212,7 +223,8 @@ final missionListProvider =
       ref,
     ) {
       final repository = ref.watch(missionRepositoryProvider);
-      return MissionListNotifier(repository);
+      final userStatsRepository = ref.watch(userStatsRepositoryProvider);
+      return MissionListNotifier(repository, userStatsRepository);
     });
 
 // 便利なヘルパーProvider（アクティブミッション数を取得）

@@ -36,6 +36,8 @@ class UserStatsRepository {
     await _migrateFromSharedBox();
     // UID別ボックスのデータをFirestoreへ移行
     await _migrateLocalToFirestoreIfNeeded();
+    // 既存アカウントの累計経験値・ミッション完了数をFirestoreのミッション履歴から集計
+    await _migrateTotalStatsIfNeeded();
   }
 
   /// 旧共有ボックス（'userStats'）からUID別ボックスへデータを移行する
@@ -102,6 +104,86 @@ class UserStatsRepository {
     }
   }
 
+  /// 既存アカウント向け: Firestoreのミッション履歴から累計経験値・完了数を集計する
+  /// totalExp が 0 かつ level > 1（過去に経験値を得ているはず）の場合のみ実行
+  Future<void> _migrateTotalStatsIfNeeded() async {
+    if (uid == null || _statsDoc == null) return;
+    try {
+      final snapshot = await _statsDoc!.get();
+      if (!snapshot.exists) return;
+      final data = snapshot.data() as Map<String, dynamic>?;
+      if (data == null) return;
+
+      // totalExp フィールドが既に存在し、0より大きい場合はスキップ（移行済み）
+      final existingTotalExp = data['totalExp'] as int?;
+      if (existingTotalExp != null && existingTotalExp > 0) {
+        debugPrint(
+          '☁️ UserStatsRepository: totalExp already exists ($existingTotalExp), skipping migration',
+        );
+        return;
+      }
+
+      // level が 1 で currentExp が 0 なら本当に新規なのでスキップ
+      final level = data['level'] as int? ?? 1;
+      final currentExp = data['currentExp'] as int? ?? 0;
+      if (level <= 1 && currentExp == 0) {
+        debugPrint(
+          '☁️ UserStatsRepository: New account (level 1, 0 exp), skipping totalStats migration',
+        );
+        return;
+      }
+
+      debugPrint(
+        '☁️ UserStatsRepository: Migrating totalStats from mission history...',
+      );
+
+      // Firestoreの全ミッションを取得
+      final missionsSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('missions')
+          .get();
+
+      int totalExp = 0;
+      int completedMissionCount = 0;
+
+      for (final doc in missionsSnapshot.docs) {
+        final missionData = doc.data();
+        final completedAt = missionData['completedAt'];
+
+        // 完了済みミッションをカウント
+        if (completedAt != null) {
+          completedMissionCount++;
+        }
+
+        // 全ミッション（完了・未完了問わず）の完了タスクのexpを合算
+        final tasks = missionData['tasks'] as List<dynamic>? ?? [];
+        for (final task in tasks) {
+          final taskMap = task as Map<String, dynamic>;
+          if (taskMap['isCompleted'] == true) {
+            totalExp += (taskMap['exp'] as int? ?? 250);
+          }
+        }
+      }
+
+      debugPrint(
+        '☁️ UserStatsRepository: Calculated totalExp=$totalExp, completedMissionCount=$completedMissionCount',
+      );
+
+      // 現在のstatsに反映して保存
+      final currentStats = getStats();
+      final updatedStats = currentStats.copyWith(
+        totalExp: totalExp,
+        completedMissionCount: completedMissionCount,
+      );
+      await saveStats(updatedStats);
+
+      debugPrint('☁️ UserStatsRepository: totalStats migration complete');
+    } catch (e) {
+      debugPrint('⚠️ UserStatsRepository: totalStats migration failed: $e');
+    }
+  }
+
   /// Firestoreのリアルタイムストリーム
   /// 他デバイスでの変更が即座にこのストリームに流れる
   /// データが流れるたびにHiveキャッシュも更新する
@@ -160,6 +242,8 @@ class UserStatsRepository {
       level: newLevel,
       currentExp: newExp,
       nextLevelExp: requiredExp,
+      totalExp: currentStats.totalExp + exp,
+      completedMissionCount: currentStats.completedMissionCount,
     );
 
     await saveStats(updatedStats);
@@ -179,6 +263,8 @@ class UserStatsRepository {
       level: currentStats.level,
       currentExp: newExp,
       nextLevelExp: currentStats.nextLevelExp,
+      totalExp: (currentStats.totalExp - exp).clamp(0, currentStats.totalExp),
+      completedMissionCount: currentStats.completedMissionCount,
     );
 
     await saveStats(updatedStats);

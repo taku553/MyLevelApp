@@ -9,6 +9,7 @@ import '../../features/mission/presentation/mission_edit_screen.dart';
 import '../../features/mission/presentation/mission_history_screen.dart';
 import '../../features/mission/presentation/missions_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
+import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/mission/domain/mission.dart';
 import '../widgets/bottom_navigation_bar.dart';
 
@@ -79,6 +80,11 @@ final appRouterProvider = Provider((ref) {
         path: '/mission/history',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const MissionHistoryScreen(),
+      ),
+      GoRoute(
+        path: '/profile',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const ProfileScreen(),
       ),
     ],
   );

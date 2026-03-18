@@ -13,6 +13,8 @@ class UserStats with _$UserStats {
     @HiveField(2)
     @Default(100)
     int nextLevelExp, // 次のレベルに必要なトータル経験値ではなく、そのレベルで必要な経験値を想定
+    @HiveField(3) @Default(0) int totalExp,
+    @HiveField(4) @Default(0) int completedMissionCount,
   }) = _UserStats;
 
   factory UserStats.fromJson(Map<String, dynamic> json) =>

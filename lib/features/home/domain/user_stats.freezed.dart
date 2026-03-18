@@ -25,7 +25,12 @@ mixin _$UserStats {
   @HiveField(1)
   int get currentExp => throw _privateConstructorUsedError;
   @HiveField(2)
-  int get nextLevelExp => throw _privateConstructorUsedError;
+  int get nextLevelExp =>
+      throw _privateConstructorUsedError; // 次のレベルに必要なトータル経験値ではなく、そのレベルで必要な経験値を想定
+  @HiveField(3)
+  int get totalExp => throw _privateConstructorUsedError;
+  @HiveField(4)
+  int get completedMissionCount => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -41,7 +46,9 @@ abstract class $UserStatsCopyWith<$Res> {
   $Res call(
       {@HiveField(0) int level,
       @HiveField(1) int currentExp,
-      @HiveField(2) int nextLevelExp});
+      @HiveField(2) int nextLevelExp,
+      @HiveField(3) int totalExp,
+      @HiveField(4) int completedMissionCount});
 }
 
 /// @nodoc
@@ -60,6 +67,8 @@ class _$UserStatsCopyWithImpl<$Res, $Val extends UserStats>
     Object? level = null,
     Object? currentExp = null,
     Object? nextLevelExp = null,
+    Object? totalExp = null,
+    Object? completedMissionCount = null,
   }) {
     return _then(_value.copyWith(
       level: null == level
@@ -73,6 +82,14 @@ class _$UserStatsCopyWithImpl<$Res, $Val extends UserStats>
       nextLevelExp: null == nextLevelExp
           ? _value.nextLevelExp
           : nextLevelExp // ignore: cast_nullable_to_non_nullable
+              as int,
+      totalExp: null == totalExp
+          ? _value.totalExp
+          : totalExp // ignore: cast_nullable_to_non_nullable
+              as int,
+      completedMissionCount: null == completedMissionCount
+          ? _value.completedMissionCount
+          : completedMissionCount // ignore: cast_nullable_to_non_nullable
               as int,
     ) as $Val);
   }
@@ -89,7 +106,9 @@ abstract class _$$UserStatsImplCopyWith<$Res>
   $Res call(
       {@HiveField(0) int level,
       @HiveField(1) int currentExp,
-      @HiveField(2) int nextLevelExp});
+      @HiveField(2) int nextLevelExp,
+      @HiveField(3) int totalExp,
+      @HiveField(4) int completedMissionCount});
 }
 
 /// @nodoc
@@ -106,6 +125,8 @@ class __$$UserStatsImplCopyWithImpl<$Res>
     Object? level = null,
     Object? currentExp = null,
     Object? nextLevelExp = null,
+    Object? totalExp = null,
+    Object? completedMissionCount = null,
   }) {
     return _then(_$UserStatsImpl(
       level: null == level
@@ -120,6 +141,14 @@ class __$$UserStatsImplCopyWithImpl<$Res>
           ? _value.nextLevelExp
           : nextLevelExp // ignore: cast_nullable_to_non_nullable
               as int,
+      totalExp: null == totalExp
+          ? _value.totalExp
+          : totalExp // ignore: cast_nullable_to_non_nullable
+              as int,
+      completedMissionCount: null == completedMissionCount
+          ? _value.completedMissionCount
+          : completedMissionCount // ignore: cast_nullable_to_non_nullable
+              as int,
     ));
   }
 }
@@ -131,7 +160,9 @@ class _$UserStatsImpl implements _UserStats {
   const _$UserStatsImpl(
       {@HiveField(0) this.level = 1,
       @HiveField(1) this.currentExp = 0,
-      @HiveField(2) this.nextLevelExp = 100});
+      @HiveField(2) this.nextLevelExp = 100,
+      @HiveField(3) this.totalExp = 0,
+      @HiveField(4) this.completedMissionCount = 0});
 
   factory _$UserStatsImpl.fromJson(Map<String, dynamic> json) =>
       _$$UserStatsImplFromJson(json);
@@ -148,10 +179,19 @@ class _$UserStatsImpl implements _UserStats {
   @JsonKey()
   @HiveField(2)
   final int nextLevelExp;
+// 次のレベルに必要なトータル経験値ではなく、そのレベルで必要な経験値を想定
+  @override
+  @JsonKey()
+  @HiveField(3)
+  final int totalExp;
+  @override
+  @JsonKey()
+  @HiveField(4)
+  final int completedMissionCount;
 
   @override
   String toString() {
-    return 'UserStats(level: $level, currentExp: $currentExp, nextLevelExp: $nextLevelExp)';
+    return 'UserStats(level: $level, currentExp: $currentExp, nextLevelExp: $nextLevelExp, totalExp: $totalExp, completedMissionCount: $completedMissionCount)';
   }
 
   @override
@@ -163,12 +203,17 @@ class _$UserStatsImpl implements _UserStats {
             (identical(other.currentExp, currentExp) ||
                 other.currentExp == currentExp) &&
             (identical(other.nextLevelExp, nextLevelExp) ||
-                other.nextLevelExp == nextLevelExp));
+                other.nextLevelExp == nextLevelExp) &&
+            (identical(other.totalExp, totalExp) ||
+                other.totalExp == totalExp) &&
+            (identical(other.completedMissionCount, completedMissionCount) ||
+                other.completedMissionCount == completedMissionCount));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(runtimeType, level, currentExp, nextLevelExp);
+  int get hashCode => Object.hash(runtimeType, level, currentExp, nextLevelExp,
+      totalExp, completedMissionCount);
 
   @JsonKey(ignore: true)
   @override
@@ -188,7 +233,9 @@ abstract class _UserStats implements UserStats {
   const factory _UserStats(
       {@HiveField(0) final int level,
       @HiveField(1) final int currentExp,
-      @HiveField(2) final int nextLevelExp}) = _$UserStatsImpl;
+      @HiveField(2) final int nextLevelExp,
+      @HiveField(3) final int totalExp,
+      @HiveField(4) final int completedMissionCount}) = _$UserStatsImpl;
 
   factory _UserStats.fromJson(Map<String, dynamic> json) =
       _$UserStatsImpl.fromJson;
@@ -202,6 +249,12 @@ abstract class _UserStats implements UserStats {
   @override
   @HiveField(2)
   int get nextLevelExp;
+  @override // 次のレベルに必要なトータル経験値ではなく、そのレベルで必要な経験値を想定
+  @HiveField(3)
+  int get totalExp;
+  @override
+  @HiveField(4)
+  int get completedMissionCount;
   @override
   @JsonKey(ignore: true)
   _$$UserStatsImplCopyWith<_$UserStatsImpl> get copyWith =>

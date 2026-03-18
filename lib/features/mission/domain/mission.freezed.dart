@@ -12,8 +12,7 @@ part of 'mission.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 Mission _$MissionFromJson(Map<String, dynamic> json) {
   return _Mission.fromJson(json);
@@ -46,15 +45,14 @@ abstract class $MissionCopyWith<$Res> {
   factory $MissionCopyWith(Mission value, $Res Function(Mission) then) =
       _$MissionCopyWithImpl<$Res, Mission>;
   @useResult
-  $Res call({
-    @HiveField(0) String id,
-    @HiveField(1) String title,
-    @HiveField(2) List<Task> tasks,
-    @HiveField(3) DateTime createdAt,
-    @HiveField(4) DateTime? completedAt,
-    @HiveField(5) int? levelBeforeCompletion,
-    @HiveField(6) int? levelAfterCompletion,
-  });
+  $Res call(
+      {@HiveField(0) String id,
+      @HiveField(1) String title,
+      @HiveField(2) List<Task> tasks,
+      @HiveField(3) DateTime createdAt,
+      @HiveField(4) DateTime? completedAt,
+      @HiveField(5) int? levelBeforeCompletion,
+      @HiveField(6) int? levelAfterCompletion});
 }
 
 /// @nodoc
@@ -78,59 +76,54 @@ class _$MissionCopyWithImpl<$Res, $Val extends Mission>
     Object? levelBeforeCompletion = freezed,
     Object? levelAfterCompletion = freezed,
   }) {
-    return _then(
-      _value.copyWith(
-            id: null == id
-                ? _value.id
-                : id // ignore: cast_nullable_to_non_nullable
-                      as String,
-            title: null == title
-                ? _value.title
-                : title // ignore: cast_nullable_to_non_nullable
-                      as String,
-            tasks: null == tasks
-                ? _value.tasks
-                : tasks // ignore: cast_nullable_to_non_nullable
-                      as List<Task>,
-            createdAt: null == createdAt
-                ? _value.createdAt
-                : createdAt // ignore: cast_nullable_to_non_nullable
-                      as DateTime,
-            completedAt: freezed == completedAt
-                ? _value.completedAt
-                : completedAt // ignore: cast_nullable_to_non_nullable
-                      as DateTime?,
-            levelBeforeCompletion: freezed == levelBeforeCompletion
-                ? _value.levelBeforeCompletion
-                : levelBeforeCompletion // ignore: cast_nullable_to_non_nullable
-                      as int?,
-            levelAfterCompletion: freezed == levelAfterCompletion
-                ? _value.levelAfterCompletion
-                : levelAfterCompletion // ignore: cast_nullable_to_non_nullable
-                      as int?,
-          )
-          as $Val,
-    );
+    return _then(_value.copyWith(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as String,
+      title: null == title
+          ? _value.title
+          : title // ignore: cast_nullable_to_non_nullable
+              as String,
+      tasks: null == tasks
+          ? _value.tasks
+          : tasks // ignore: cast_nullable_to_non_nullable
+              as List<Task>,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      completedAt: freezed == completedAt
+          ? _value.completedAt
+          : completedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+      levelBeforeCompletion: freezed == levelBeforeCompletion
+          ? _value.levelBeforeCompletion
+          : levelBeforeCompletion // ignore: cast_nullable_to_non_nullable
+              as int?,
+      levelAfterCompletion: freezed == levelAfterCompletion
+          ? _value.levelAfterCompletion
+          : levelAfterCompletion // ignore: cast_nullable_to_non_nullable
+              as int?,
+    ) as $Val);
   }
 }
 
 /// @nodoc
 abstract class _$$MissionImplCopyWith<$Res> implements $MissionCopyWith<$Res> {
   factory _$$MissionImplCopyWith(
-    _$MissionImpl value,
-    $Res Function(_$MissionImpl) then,
-  ) = __$$MissionImplCopyWithImpl<$Res>;
+          _$MissionImpl value, $Res Function(_$MissionImpl) then) =
+      __$$MissionImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    @HiveField(0) String id,
-    @HiveField(1) String title,
-    @HiveField(2) List<Task> tasks,
-    @HiveField(3) DateTime createdAt,
-    @HiveField(4) DateTime? completedAt,
-    @HiveField(5) int? levelBeforeCompletion,
-    @HiveField(6) int? levelAfterCompletion,
-  });
+  $Res call(
+      {@HiveField(0) String id,
+      @HiveField(1) String title,
+      @HiveField(2) List<Task> tasks,
+      @HiveField(3) DateTime createdAt,
+      @HiveField(4) DateTime? completedAt,
+      @HiveField(5) int? levelBeforeCompletion,
+      @HiveField(6) int? levelAfterCompletion});
 }
 
 /// @nodoc
@@ -138,9 +131,8 @@ class __$$MissionImplCopyWithImpl<$Res>
     extends _$MissionCopyWithImpl<$Res, _$MissionImpl>
     implements _$$MissionImplCopyWith<$Res> {
   __$$MissionImplCopyWithImpl(
-    _$MissionImpl _value,
-    $Res Function(_$MissionImpl) _then,
-  ) : super(_value, _then);
+      _$MissionImpl _value, $Res Function(_$MissionImpl) _then)
+      : super(_value, _then);
 
   @pragma('vm:prefer-inline')
   @override
@@ -153,38 +145,36 @@ class __$$MissionImplCopyWithImpl<$Res>
     Object? levelBeforeCompletion = freezed,
     Object? levelAfterCompletion = freezed,
   }) {
-    return _then(
-      _$MissionImpl(
-        id: null == id
-            ? _value.id
-            : id // ignore: cast_nullable_to_non_nullable
-                  as String,
-        title: null == title
-            ? _value.title
-            : title // ignore: cast_nullable_to_non_nullable
-                  as String,
-        tasks: null == tasks
-            ? _value._tasks
-            : tasks // ignore: cast_nullable_to_non_nullable
-                  as List<Task>,
-        createdAt: null == createdAt
-            ? _value.createdAt
-            : createdAt // ignore: cast_nullable_to_non_nullable
-                  as DateTime,
-        completedAt: freezed == completedAt
-            ? _value.completedAt
-            : completedAt // ignore: cast_nullable_to_non_nullable
-                  as DateTime?,
-        levelBeforeCompletion: freezed == levelBeforeCompletion
-            ? _value.levelBeforeCompletion
-            : levelBeforeCompletion // ignore: cast_nullable_to_non_nullable
-                  as int?,
-        levelAfterCompletion: freezed == levelAfterCompletion
-            ? _value.levelAfterCompletion
-            : levelAfterCompletion // ignore: cast_nullable_to_non_nullable
-                  as int?,
-      ),
-    );
+    return _then(_$MissionImpl(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as String,
+      title: null == title
+          ? _value.title
+          : title // ignore: cast_nullable_to_non_nullable
+              as String,
+      tasks: null == tasks
+          ? _value._tasks
+          : tasks // ignore: cast_nullable_to_non_nullable
+              as List<Task>,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      completedAt: freezed == completedAt
+          ? _value.completedAt
+          : completedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+      levelBeforeCompletion: freezed == levelBeforeCompletion
+          ? _value.levelBeforeCompletion
+          : levelBeforeCompletion // ignore: cast_nullable_to_non_nullable
+              as int?,
+      levelAfterCompletion: freezed == levelAfterCompletion
+          ? _value.levelAfterCompletion
+          : levelAfterCompletion // ignore: cast_nullable_to_non_nullable
+              as int?,
+    ));
   }
 }
 
@@ -192,15 +182,15 @@ class __$$MissionImplCopyWithImpl<$Res>
 @JsonSerializable()
 @HiveType(typeId: 1)
 class _$MissionImpl implements _Mission {
-  const _$MissionImpl({
-    @HiveField(0) required this.id,
-    @HiveField(1) required this.title,
-    @HiveField(2) final List<Task> tasks = const [],
-    @HiveField(3) required this.createdAt,
-    @HiveField(4) this.completedAt,
-    @HiveField(5) this.levelBeforeCompletion,
-    @HiveField(6) this.levelAfterCompletion,
-  }) : _tasks = tasks;
+  const _$MissionImpl(
+      {@HiveField(0) required this.id,
+      @HiveField(1) required this.title,
+      @HiveField(2) final List<Task> tasks = const [],
+      @HiveField(3) required this.createdAt,
+      @HiveField(4) this.completedAt,
+      @HiveField(5) this.levelBeforeCompletion,
+      @HiveField(6) this.levelAfterCompletion})
+      : _tasks = tasks;
 
   factory _$MissionImpl.fromJson(Map<String, dynamic> json) =>
       _$$MissionImplFromJson(json);
@@ -260,15 +250,14 @@ class _$MissionImpl implements _Mission {
   @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(
-    runtimeType,
-    id,
-    title,
-    const DeepCollectionEquality().hash(_tasks),
-    createdAt,
-    completedAt,
-    levelBeforeCompletion,
-    levelAfterCompletion,
-  );
+      runtimeType,
+      id,
+      title,
+      const DeepCollectionEquality().hash(_tasks),
+      createdAt,
+      completedAt,
+      levelBeforeCompletion,
+      levelAfterCompletion);
 
   @JsonKey(ignore: true)
   @override
@@ -278,20 +267,21 @@ class _$MissionImpl implements _Mission {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$MissionImplToJson(this);
+    return _$$MissionImplToJson(
+      this,
+    );
   }
 }
 
 abstract class _Mission implements Mission {
-  const factory _Mission({
-    @HiveField(0) required final String id,
-    @HiveField(1) required final String title,
-    @HiveField(2) final List<Task> tasks,
-    @HiveField(3) required final DateTime createdAt,
-    @HiveField(4) final DateTime? completedAt,
-    @HiveField(5) final int? levelBeforeCompletion,
-    @HiveField(6) final int? levelAfterCompletion,
-  }) = _$MissionImpl;
+  const factory _Mission(
+      {@HiveField(0) required final String id,
+      @HiveField(1) required final String title,
+      @HiveField(2) final List<Task> tasks,
+      @HiveField(3) required final DateTime createdAt,
+      @HiveField(4) final DateTime? completedAt,
+      @HiveField(5) final int? levelBeforeCompletion,
+      @HiveField(6) final int? levelAfterCompletion}) = _$MissionImpl;
 
   factory _Mission.fromJson(Map<String, dynamic> json) = _$MissionImpl.fromJson;
 
