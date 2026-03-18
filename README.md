@@ -93,24 +93,49 @@ flutter run
 
 ```
 lib/
-├── main.dart                  # エントリーポイント・認証フロー
-├── firebase_options.dart      # Firebase設定（.gitignore対象）
+├── main.dart                     # エントリーポイント・認証フロー
+├── firebase_options.dart         # Firebase設定（.gitignore対象）
 ├── core/
-│   ├── auth/                  # 認証（AuthService, LoginScreen）
-│   ├── router/                # GoRouter設定
-│   ├── theme/                 # テーマ・カラー定義
-│   └── widgets/               # 共通ウィジェット
+│   ├── animations/               # アニメーション（レベルアップ・ミッション完了演出）
+│   ├── auth/                     # 認証（AuthService, LoginScreen）
+│   ├── router/                   # GoRouter設定
+│   ├── theme/                    # テーマ・カラー定義（AppColors）
+│   └── widgets/                  # 共通ウィジェット（BottomNavBar, MaxWidthContainer）
 └── features/
-    ├── home/                  # ホーム画面・レベル表示
-    │   ├── data/              # UserStatsRepository（Hive + Firestore）
-    │   ├── domain/            # UserStats モデル
-    │   ├── providers/         # UserStatsNotifier
-    │   └── presentation/      # ホーム画面UI
-    ├── mission/               # ミッション機能
-    │   ├── data/              # MissionRepository（Hive + Firestore）
-    │   ├── domain/            # Mission, Task モデル
-    │   ├── providers/         # MissionListNotifier
-    │   └── presentation/      # ミッション関連画面
-    └── settings/              # 設定画面（ログアウト等）
+    ├── home/                     # ホーム画面・レベル表示
+    │   ├── data/                 # UserStatsRepository（Hive + Firestore）
+    │   ├── domain/               # UserStats モデル（level, exp, totalExp 等）
+    │   ├── providers/            # UserStatsNotifier, ExpProgressController
+    │   ├── presentation/         # ホーム画面UI
+    │   └── widgets/              # ExpProgress, LevelDisplay, MissionList
+    ├── mission/                  # ミッション機能
+    │   ├── data/                 # MissionRepository（Hive + Firestore）
+    │   ├── domain/               # Mission, Task モデル
+    │   ├── providers/            # MissionListNotifier, TaskCompletionService
+    │   ├── presentation/         # ミッション作成/編集/確認/履歴/一覧画面
+    │   └── widgets/              # MissionCard, TaskItem 等
+    ├── profile/                  # プロフィール画面
+    │   └── presentation/         # ProfileScreen（アカウント情報・ステータス表示）
+    └── settings/                 # 設定画面（ログアウト等）
+        └── presentation/         # SettingsScreen
+```
+
+### その他の主要ディレクトリ
+
+```
+assets/
+├── animations/        # Lottieアニメーション JSON
+└── fonts/             # Noto Sans JP, Lato, Roboto
+
+android/               # Android プラットフォーム設定
+ios/                   # iOS プラットフォーム設定
+macos/                 # macOS プラットフォーム設定
+web/                   # Web プラットフォーム設定
+linux/                 # Linux プラットフォーム設定
+windows/               # Windows プラットフォーム設定
+
+要件定義＆モックアップ/
+├── requirements.md            # 要件定義書
+└── mission_leveler_v6.html    # HTMLモックアップ
 ```
 
