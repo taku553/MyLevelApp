@@ -9,6 +9,8 @@ import '../../features/mission/presentation/mission_edit_screen.dart';
 import '../../features/mission/presentation/mission_history_screen.dart';
 import '../../features/mission/presentation/missions_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
+import '../../features/settings/presentation/change_password_screen.dart';
+import '../../features/settings/presentation/delete_account_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/mission/domain/mission.dart';
 import '../widgets/bottom_navigation_bar.dart';
@@ -85,6 +87,16 @@ final appRouterProvider = Provider((ref) {
         path: '/profile',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: '/settings/change-password',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const ChangePasswordScreen(),
+      ),
+      GoRoute(
+        path: '/settings/delete-account',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const DeleteAccountScreen(),
       ),
     ],
   );

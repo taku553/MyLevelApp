@@ -108,6 +108,15 @@ class SettingsScreen extends ConsumerWidget {
               title: 'アカウント',
               items: [
                 _SettingsItem(
+                  icon: Icons.lock_outline,
+                  title: 'パスワード変更',
+                  trailing: const Icon(
+                    Icons.chevron_right,
+                    color: Color(0xFFA0AEC0),
+                  ),
+                  onTap: () => context.push('/settings/change-password'),
+                ),
+                _SettingsItem(
                   icon: Icons.logout,
                   title: 'ログアウト',
                   trailing: const Icon(
@@ -139,6 +148,15 @@ class SettingsScreen extends ConsumerWidget {
                       await ref.read(authServiceProvider).signOut();
                     }
                   },
+                ),
+                _SettingsItem(
+                  icon: Icons.delete_forever,
+                  title: 'アカウント削除',
+                  trailing: const Icon(
+                    Icons.chevron_right,
+                    color: Color(0xFFA0AEC0),
+                  ),
+                  onTap: () => context.push('/settings/delete-account'),
                 ),
               ],
             ),

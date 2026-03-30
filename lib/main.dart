@@ -13,6 +13,7 @@ import 'core/router/app_router.dart';
 import 'features/mission/domain/task.dart';
 import 'features/mission/domain/mission.dart';
 import 'features/home/domain/user_stats.dart';
+import 'features/home/providers/user_stats_provider.dart';
 import 'features/mission/data/mission_repository.dart';
 import 'features/home/data/user_stats_repository.dart';
 
@@ -130,6 +131,8 @@ class _AuthenticatedAppState extends ConsumerState<_AuthenticatedApp> {
       // Providerを上書きしてからGoRouterを生成
       ref.read(missionRepositoryProvider.notifier).state = missionRepo;
       ref.read(userStatsRepositoryProvider.notifier).state = userStatsRepo;
+      // ユーザー切替時に古いキャッシュが残らないよう、statsProviderを再作成
+      ref.invalidate(userStatsProvider);
       _router = ref.read(appRouterProvider);
       setState(() {
         _initialized = true;

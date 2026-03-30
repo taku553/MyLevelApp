@@ -47,6 +47,52 @@ class AuthService {
     debugPrint('🔑 Auth: Signed out');
   }
 
+  /// 現在のパスワードで再認証（セキュリティ操作の前に必要）
+  Future<void> reauthenticate(String password) async {
+    final user = _auth.currentUser;
+    if (user == null || user.email == null) {
+      throw FirebaseAuthException(
+        code: 'user-not-found',
+        message: 'No authenticated user found.',
+      );
+    }
+    debugPrint('🔑 Auth: Reauthenticating uid=${user.uid}');
+    final credential = EmailAuthProvider.credential(
+      email: user.email!,
+      password: password,
+    );
+    await user.reauthenticateWithCredential(credential);
+    debugPrint('🔑 Auth: Reauthentication successful. uid=${user.uid}');
+  }
+
+  /// パスワード変更（事前に reauthenticate を呼ぶこと）
+  Future<void> changePassword(String newPassword) async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw FirebaseAuthException(
+        code: 'user-not-found',
+        message: 'No authenticated user found.',
+      );
+    }
+    debugPrint('🔑 Auth: Changing password for uid=${user.uid}');
+    await user.updatePassword(newPassword);
+    debugPrint('🔑 Auth: Password changed successfully. uid=${user.uid}');
+  }
+
+  /// アカウント削除（事前に reauthenticate を呼ぶこと）
+  Future<void> deleteAccount() async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw FirebaseAuthException(
+        code: 'user-not-found',
+        message: 'No authenticated user found.',
+      );
+    }
+    debugPrint('⚠️ Auth: Deleting account. uid=${user.uid}');
+    await user.delete();
+    debugPrint('🗑️ Auth: Account deleted. uid=${user.uid}');
+  }
+
   /// 認証状態の変化を監視するStream
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 }
