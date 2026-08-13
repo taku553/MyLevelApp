@@ -37,6 +37,11 @@ class SettingsScreen extends ConsumerWidget {
               title: 'アプリ情報',
               items: [
                 _SettingsItem(
+                  icon: Icons.star_outline,
+                  title: 'デフォルト経験値の設定',
+                  onTap: () => context.push('/settings/default-exp'),
+                ),
+                _SettingsItem(
                   icon: Icons.info_outline,
                   title: 'バージョン',
                   trailing: const Text(

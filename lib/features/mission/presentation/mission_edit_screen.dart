@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/max_width_container.dart';
+import '../../home/providers/user_stats_provider.dart';
+import '../../settings/providers/user_settings_provider.dart';
 import '../domain/mission.dart';
 import '../domain/task.dart';
 import '../providers/mission_provider.dart';
@@ -52,7 +54,17 @@ class _MissionEditScreenState extends ConsumerState<MissionEditScreen> {
   void _addTaskField() {
     setState(() {
       _taskControllers.add(TextEditingController());
-      _expControllers.add(TextEditingController(text: '250'));
+
+      final settings = ref.read(userSettingsNotifierProvider).valueOrNull;
+      final userStats = ref.read(userStatsProvider).valueOrNull;
+      final currentLevel = userStats?.level ?? 1;
+
+      int defaultExp = 250;
+      if (settings != null) {
+        defaultExp = settings.getDefaultExpForLevel(currentLevel);
+      }
+
+      _expControllers.add(TextEditingController(text: defaultExp.toString()));
       _taskIds.add(''); // 新規タスクは空のIDを設定
     });
   }
@@ -74,12 +86,17 @@ class _MissionEditScreenState extends ConsumerState<MissionEditScreen> {
       return;
     }
 
+    final settings = ref.read(userSettingsNotifierProvider).valueOrNull;
+    final userStats = ref.read(userStatsProvider).valueOrNull;
+    final currentLevel = userStats?.level ?? 1;
+    final defaultExp = settings?.getDefaultExpForLevel(currentLevel) ?? 250;
+
     // タスクデータを収集
     final tasks = <Task>[];
     for (int i = 0; i < _taskControllers.length; i++) {
       final taskName = _taskControllers[i].text.trim();
       if (taskName.isNotEmpty) {
-        final exp = int.tryParse(_expControllers[i].text) ?? 250;
+        final exp = int.tryParse(_expControllers[i].text) ?? defaultExp;
 
         // 既存のタスクか新規タスクかを判定
         final existingTask = _taskIds[i].isNotEmpty

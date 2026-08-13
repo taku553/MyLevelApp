@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/max_width_container.dart';
+import '../../home/providers/user_stats_provider.dart';
+import '../../settings/providers/user_settings_provider.dart';
 
 class MissionCreationScreen extends ConsumerStatefulWidget {
   const MissionCreationScreen({super.key});
@@ -40,7 +42,18 @@ class _MissionCreationScreenState extends ConsumerState<MissionCreationScreen> {
   void _addTaskField() {
     setState(() {
       _taskControllers.add(TextEditingController());
-      _expControllers.add(TextEditingController(text: '250'));
+
+      // プロバイダーから設定とレベルを読み取ってデフォルトEXPを取得
+      final settings = ref.read(userSettingsNotifierProvider).valueOrNull;
+      final userStats = ref.read(userStatsProvider).valueOrNull;
+      final currentLevel = userStats?.level ?? 1;
+
+      int defaultExp = 250;
+      if (settings != null) {
+        defaultExp = settings.getDefaultExpForLevel(currentLevel);
+      }
+
+      _expControllers.add(TextEditingController(text: defaultExp.toString()));
     });
   }
 
@@ -60,12 +73,17 @@ class _MissionCreationScreenState extends ConsumerState<MissionCreationScreen> {
       return;
     }
 
+    final settings = ref.read(userSettingsNotifierProvider).valueOrNull;
+    final userStats = ref.read(userStatsProvider).valueOrNull;
+    final currentLevel = userStats?.level ?? 1;
+    final defaultExp = settings?.getDefaultExpForLevel(currentLevel) ?? 250;
+
     // タスクデータを収集
     final tasks = <Map<String, dynamic>>[];
     for (int i = 0; i < _taskControllers.length; i++) {
       final taskName = _taskControllers[i].text.trim();
       if (taskName.isNotEmpty) {
-        final exp = int.tryParse(_expControllers[i].text) ?? 250;
+        final exp = int.tryParse(_expControllers[i].text) ?? defaultExp;
         tasks.add({'name': taskName, 'exp': exp});
       }
     }
