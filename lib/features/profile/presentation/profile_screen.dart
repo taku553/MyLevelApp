@@ -44,7 +44,7 @@ class ProfileScreen extends ConsumerWidget {
             return _buildProfileContent(context, user, userStats);
           },
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (_, __) => const Center(child: Text('エラーが発生しました')),
+          error: (_, _) => const Center(child: Text('エラーが発生しました')),
         ),
       ),
     );
@@ -88,7 +88,7 @@ class ProfileScreen extends ConsumerWidget {
               value: userStats.when(
                 data: (stats) => 'Lv. ${stats.level}',
                 loading: () => '...',
-                error: (_, __) => '-',
+                error: (_, _) => '-',
               ),
             ),
             _ProfileInfoItem(
@@ -97,7 +97,7 @@ class ProfileScreen extends ConsumerWidget {
               value: userStats.when(
                 data: (stats) => '${stats.totalExp} EXP',
                 loading: () => '...',
-                error: (_, __) => '-',
+                error: (_, _) => '-',
               ),
             ),
             _ProfileInfoItem(
@@ -106,7 +106,7 @@ class ProfileScreen extends ConsumerWidget {
               value: userStats.when(
                 data: (stats) => '${stats.completedMissionCount} 回',
                 loading: () => '...',
-                error: (_, __) => '-',
+                error: (_, _) => '-',
               ),
             ),
           ],
@@ -119,7 +119,7 @@ class ProfileScreen extends ConsumerWidget {
     final level = userStats.when(
       data: (stats) => stats.level,
       loading: () => 0,
-      error: (_, __) => 0,
+      error: (_, _) => 0,
     );
 
     return Container(

@@ -242,7 +242,7 @@ class _LevelUpOverlayState extends ConsumerState<LevelUpOverlay>
   Widget _buildLevelNumber() {
     return SizedBox(
       height: 90,
-      width: 120,
+      width: 200,
       child: Stack(
         alignment: Alignment.center,
         children: [
