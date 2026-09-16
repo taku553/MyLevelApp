@@ -12,6 +12,7 @@ import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/settings/presentation/change_password_screen.dart';
 import '../../features/settings/presentation/delete_account_screen.dart';
 import '../../features/settings/presentation/default_exp_settings_screen.dart';
+import '../../features/settings/presentation/legal_notice_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/mission/domain/mission.dart';
 import '../widgets/bottom_navigation_bar.dart';
@@ -103,6 +104,11 @@ final appRouterProvider = Provider((ref) {
         path: '/settings/default-exp',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const DefaultExpSettingsScreen(),
+      ),
+      GoRoute(
+        path: '/settings/legal-notice',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const LegalNoticeScreen(),
       ),
     ],
   );

@@ -15,6 +15,7 @@ import 'features/home/domain/user_stats.dart';
 import 'features/home/providers/user_stats_provider.dart';
 import 'features/mission/data/mission_repository.dart';
 import 'features/home/data/user_stats_repository.dart';
+import 'features/settings/providers/user_settings_provider.dart';
 
 void main() async {
   // Flutterエンジンの初期化
@@ -100,6 +101,8 @@ class _AuthenticatedAppState extends ConsumerState<_AuthenticatedApp> {
 
     await missionRepo.init();
     await userStatsRepo.init();
+    // タスク追加画面を開いた瞬間にデフォルト経験値が未読込みで250にフォールバックしないよう、ここで先読みしておく
+    await ref.read(userSettingsNotifierProvider.future);
 
     debugPrint('🚀 App: Repositories initialized successfully');
 

@@ -51,22 +51,24 @@ class _MissionEditScreenState extends ConsumerState<MissionEditScreen> {
     super.dispose();
   }
 
-  void _addTaskField() {
+  Future<void> _addTaskField() async {
+    final expController = TextEditingController(text: '250');
     setState(() {
       _taskControllers.add(TextEditingController());
-
-      final settings = ref.read(userSettingsNotifierProvider).valueOrNull;
-      final userStats = ref.read(userStatsProvider).valueOrNull;
-      final currentLevel = userStats?.level ?? 1;
-
-      int defaultExp = 250;
-      if (settings != null) {
-        defaultExp = settings.getDefaultExpForLevel(currentLevel);
-      }
-
-      _expControllers.add(TextEditingController(text: defaultExp.toString()));
+      _expControllers.add(expController);
       _taskIds.add(''); // 新規タスクは空のIDを設定
     });
+
+    // 設定の非同期読み込み完了を待ってから正しいデフォルトEXPを反映する
+    // （起動直後は Firestore からの読み込みが完了しておらず valueOrNull が null になるため）
+    final settings = await ref.read(userSettingsNotifierProvider.future);
+    final userStats = ref.read(userStatsProvider).valueOrNull;
+    final currentLevel = userStats?.level ?? 1;
+    final defaultExp = settings.getDefaultExpForLevel(currentLevel);
+
+    if (mounted) {
+      expController.text = defaultExp.toString();
+    }
   }
 
   void _removeTaskField(int index) {
