@@ -106,6 +106,15 @@ class SettingsScreen extends ConsumerWidget {
                     // TODO: Navigate to privacy policy screen
                   },
                 ),
+                _SettingsItem(
+                  icon: Icons.gavel_outlined,
+                  title: '特定商取引法に関する表記',
+                  trailing: const Icon(
+                    Icons.chevron_right,
+                    color: Color(0xFFA0AEC0),
+                  ),
+                  onTap: () => context.push('/settings/legal-notice'),
+                ),
               ],
             ),
             const SizedBox(height: 24),
