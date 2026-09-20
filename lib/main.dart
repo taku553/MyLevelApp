@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +8,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'core/auth/auth_service.dart';
 import 'core/auth/login_screen.dart';
+import 'core/utils/app_reload.dart';
 
 import 'core/router/app_router.dart';
 import 'features/mission/domain/task.dart';
@@ -17,10 +19,16 @@ import 'features/mission/data/mission_repository.dart';
 import 'features/home/data/user_stats_repository.dart';
 import 'features/settings/providers/user_settings_provider.dart';
 
-void main() async {
+void main() {
   // Flutterエンジンの初期化
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Firebase/Hive等の非同期初期化はrunApp後に行う。
+  // これにより初回フレームがすぐ描画され、Web版で初期化中も「真っ白な画面」にならない。
+  runApp(const ProviderScope(child: _BootstrapApp()));
+}
+
+Future<void> _initCore() async {
   // Firebaseの初期化
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
@@ -34,8 +42,133 @@ void main() async {
 
   // 日付フォーマットの日本語化
   await initializeDateFormatting('ja_JP');
+}
 
-  runApp(const ProviderScope(child: MissionLevelerApp()));
+/// Firebase/Hive初期化が終わるまでの起動画面。
+/// 初期化に時間がかかる場合（Web版でネットワークが不安定な場合など）は
+/// 再読み込みボタンを出し、固まったまま戻れなくなるのを防ぐ。
+class _BootstrapApp extends StatefulWidget {
+  const _BootstrapApp();
+
+  @override
+  State<_BootstrapApp> createState() => _BootstrapAppState();
+}
+
+class _BootstrapAppState extends State<_BootstrapApp> {
+  late Future<void> _initFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _initFuture = _initCore();
+  }
+
+  void _retry() {
+    setState(() {
+      _initFuture = _initCore();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFFF87171),
+          primary: const Color(0xFFF87171),
+        ),
+        useMaterial3: true,
+        fontFamily: 'NotoSansJP',
+      ),
+      home: FutureBuilder<void>(
+        future: _initFuture,
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return _LoadingWithReload(
+              message: '起動処理に失敗しました',
+              onRetry: _retry,
+              showRetryImmediately: true,
+            );
+          }
+          if (snapshot.connectionState != ConnectionState.done) {
+            return _LoadingWithReload(message: '準備中です...', onRetry: _retry);
+          }
+          return const MissionLevelerApp();
+        },
+      ),
+    );
+  }
+}
+
+/// 一定時間経っても完了しない場合に再読み込みボタンを表示するローディング画面
+class _LoadingWithReload extends StatefulWidget {
+  final String message;
+  final VoidCallback onRetry;
+  final bool showRetryImmediately;
+
+  const _LoadingWithReload({
+    required this.message,
+    required this.onRetry,
+    this.showRetryImmediately = false,
+  });
+
+  @override
+  State<_LoadingWithReload> createState() => _LoadingWithReloadState();
+}
+
+class _LoadingWithReloadState extends State<_LoadingWithReload> {
+  bool _showRetry = false;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _showRetry = widget.showRetryImmediately;
+    if (!_showRetry) {
+      _timer = Timer(const Duration(seconds: 8), () {
+        if (mounted) setState(() => _showRetry = true);
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _handleRetry() {
+    // Web: 固まったJS側の状態ごとリセットするため、確実性の高いページリロードを優先する
+    reloadApp();
+    // ネイティブ環境などreloadAppが効かない場合はDart側で再試行する
+    widget.onRetry();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(height: 16),
+            Text(widget.message),
+            if (_showRetry) ...[
+              const SizedBox(height: 24),
+              const Text(
+                '読み込みに時間がかかっています',
+                style: TextStyle(color: Colors.grey),
+              ),
+              const SizedBox(height: 8),
+              FilledButton(onPressed: _handleRetry, child: const Text('再読み込み')),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class MissionLevelerApp extends ConsumerWidget {
@@ -66,7 +199,7 @@ class MissionLevelerApp extends ConsumerWidget {
           return _AuthenticatedApp(uid: user.uid);
         },
         loading: () =>
-            const Scaffold(body: Center(child: CircularProgressIndicator())),
+            _LoadingWithReload(message: '認証状態を確認しています...', onRetry: () {}),
         error: (_, _) => const LoginScreen(),
       ),
     );
@@ -145,7 +278,14 @@ class _AuthenticatedAppState extends ConsumerState<_AuthenticatedApp> {
   @override
   Widget build(BuildContext context) {
     if (!_initialized) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return _LoadingWithReload(
+        message: 'データを読み込んでいます...',
+        onRetry: () {
+          setState(() {
+            _initRepositories();
+          });
+        },
+      );
     }
 
     return MaterialApp.router(
