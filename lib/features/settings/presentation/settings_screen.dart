@@ -91,9 +91,7 @@ class SettingsScreen extends ConsumerWidget {
                     Icons.chevron_right,
                     color: Color(0xFFA0AEC0),
                   ),
-                  onTap: () {
-                    // TODO: Navigate to terms screen
-                  },
+                  onTap: () => context.push('/settings/terms'),
                 ),
                 _SettingsItem(
                   icon: Icons.privacy_tip_outlined,
@@ -102,9 +100,7 @@ class SettingsScreen extends ConsumerWidget {
                     Icons.chevron_right,
                     color: Color(0xFFA0AEC0),
                   ),
-                  onTap: () {
-                    // TODO: Navigate to privacy policy screen
-                  },
+                  onTap: () => context.push('/settings/privacy-policy'),
                 ),
                 _SettingsItem(
                   icon: Icons.gavel_outlined,
